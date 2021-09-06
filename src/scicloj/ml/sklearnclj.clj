@@ -10,9 +10,6 @@
 
 (comment
   (note/init-with-browser)
-  (notespace.api/update-config
-   #(assoc % :source-base-path "userguide"))
-
   (note/eval-this-notespace)
   (note/reread-this-notespace)
   (note/render-static-html "docs/userguide-sklearnclj.html")
