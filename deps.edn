@@ -1,0 +1,28 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.10.3"}
+        scicloj/scicloj.ml {:mvn/version "0.1.0-beta4"}
+        clj-djl/clj-djl {:mvn/version "0.1.6-SNAPSHOT" :exclusions [org.slf4j/slf4j-simple]}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
+        scicloj/notespace {:mvn/version "3-beta9"}
+        scicloj/sklearn-clj {:mvn/version "0.3.3"}
+        simongray/datalinguist {:git/url "https://github.com/simongray/datalinguist"
+                                :sha     "9869884d7019e7102efffcb0de66187e9cb126c5"}
+
+        applied-science/waqi {:git/url "https://github.com/applied-science/waqi/"
+                              :sha "faefe5dfd1b161ff70089924591ac2d699527811"}
+        clj-python/libpython-clj {:mvn/version "2.00-beta-16"}}
+
+ :aliases
+
+
+ {
+
+  :jar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.278"}}
+        :exec-fn hf.depstar/jar
+        :exec-args {:jar "ml.tutorials.jar" :sync-pom true}}
+  :install {:replace-deps {slipset/deps-deploy {:mvn/version "0.1.5"}}
+            :exec-fn deps-deploy.deps-deploy/deploy
+            :exec-args {:installer :local :artifact "ml.tutorials.jar"}}
+  :deploy {:replace-deps {slipset/deps-deploy {:mvn/version "0.1.5"}}
+           :exec-fn deps-deploy.deps-deploy/deploy
+           :exec-args {:installer :remote :artifact "ml.tutorials.jar"}}}}
