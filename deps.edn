@@ -10,7 +10,9 @@
 
         applied-science/waqi {:git/url "https://github.com/applied-science/waqi/"
                               :sha "faefe5dfd1b161ff70089924591ac2d699527811"}
-        clj-python/libpython-clj {:mvn/version "2.00-beta-16"}}
+        clj-python/libpython-clj {:mvn/version "2.00-beta-16"}
+        generateme/fastmath {:mvn/version "2.1.6-SNAPSHOT"}
+        }
 
  :aliases
 
