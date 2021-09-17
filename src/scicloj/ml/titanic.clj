@@ -152,14 +152,14 @@ which is a typical case of feature engineering."]
    (ml/lift name->title)
    (ml/lift categorize-title)
    (ml/lift categorize-cabin)
-   (mm/select-columns [:age
-                       :survived
-                       :pclass
-                       :age-group
-                       :sex
+   (mm/select-columns [:age-group
+                       :cabin
                        :embarked
-                       :title
-                       :cabin])
+                       :pclass
+                       :sex
+                       :survived
+                       :title])
+                       
    (fn [ctx]
      (assoc ctx :categorical-ds
             (:metamorph/data ctx)))
@@ -316,7 +316,7 @@ This is an example how pipeline-options can be grid searched in the same way the
     (merge options
            {:model-type :smile.classification/random-forest}))))
 
-["Use sobol optimization, to find 10 grid points,
+["Use sobol optimization, to find som grid points,
 which cover in a smart way the hyper-parameter space."]
 
 (def search-grid
