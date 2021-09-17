@@ -41,8 +41,8 @@ as the purpose is to showcase machine learning with scicloj.ml, which is about m
 
 
 
-["Column names:"]
-(ds/column-names data)
+["Column info:"]
+(ds/info data)
 
 
 ["We can explore the association between the categorical columns of the dataset
@@ -152,7 +152,8 @@ which is a typical case of feature engineering."]
    (ml/lift name->title)
    (ml/lift categorize-title)
    (ml/lift categorize-cabin)
-   (mm/select-columns [:survived
+   (mm/select-columns [:age
+                       :survived
                        :pclass
                        :age-group
                        :sex
@@ -169,6 +170,10 @@ which is a typical case of feature engineering."]
 
    (mm/set-inference-target :survived)))
 
+["Transformed data"]
+(->
+ (pipeline-fn {:metamorph/data data :metamorph/mode :fit})
+ :metamorph/data)
 
 
   
@@ -317,19 +322,21 @@ which cover in a smart way the hyper-parameter space."]
 (def search-grid
   (->>
    (ml/sobol-gridsearch {:trees (ml/linear 100 500 10)
-                           :split-rule (ml/categorical [:gini :entropy])
-                           :max-depth (ml/linear 1 50 10)
-                           :node-size (ml/linear 1 10 10)
-                         :sample-rate (ml/linear 0.1 1 10)})
+                         :mtry (ml/categorical [0 2 4])
+                         :split-rule (ml/categorical [:gini :entropy])
+                         :max-depth (ml/linear 1 50 10)
+                         :node-size (ml/linear 1 10 10)})
+
    (take 100)))
   
 
-["Generate the 10 pipeline-fn we want to evaluate."]
+["Generate the pipeline-fns we want to evaluate."]
 (def pipeline-fns (map make-pipeline-fn search-grid))
 
 
-["Evaluate all 10 pipelines and keep results"]
+["Evaluate all  pipelines and keep results"]
 (def evaluations
+
   (ml/evaluate-pipelines
    pipeline-fns
    train-val-splits
@@ -338,7 +345,7 @@ which cover in a smart way the hyper-parameter space."]
    {:return-best-pipeline-only false
     :return-best-crossvalidation-only false
 
-    :map-fn :pmap
+    :map-fn :map
     :result-dissoc-seq []}))
     
    

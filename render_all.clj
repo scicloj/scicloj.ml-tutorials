@@ -17,5 +17,5 @@
  
 
 
-(ns-publics 'scicloj.ml.intro)
+;; (ns-publics 'scicloj.ml.intro)
 (System/exit 0)
