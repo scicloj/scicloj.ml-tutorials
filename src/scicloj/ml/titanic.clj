@@ -128,12 +128,12 @@ which is a typical case of feature engineering."]
    "Mr" :a
    "Master" :a
    "Capt" :a
-   "Mrs" :c
-   "Lady" :c
+   "Mrs" :b
+   "Lady" :b
    "Sir" :a
    "Dr" :a
-   "the Countess" :c
-   "Mme" :c})
+   "the Countess" :b
+   "Mme" :b})
 
 (defn categorize-title [data]
  (->
@@ -369,9 +369,10 @@ which cover in a smart way the hyper-parameter space."]
 (:model best-model)
 
 ["with a mean accuracy of "  (:mean best-model)]
-
 ["and a accuracy of "  (:metric best-model)]
 
+(println "mean acc: " (:mean best-model))
+(println "acc: " (:metric best-model))
 
 
 ["using options: "]
