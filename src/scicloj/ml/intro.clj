@@ -128,7 +128,7 @@ and is listed here only for completeness."]
 1. `tablecloth` - for general manipulation of the dataset
 1. `tech.v3.dataset` - to finally prepare a dataset for the machine learing models
 1. `metamorph.ml` - for running pipelines and machine learning core functions
-1. `Smile`  Java data science library containing lots of models
+1. `Smile`  Java machine learning library containing lots of models
 "
 ]
 

@@ -1,7 +1,7 @@
 (ns scicloj.ml.titanic
   (:require
    [notespace.api :as note]
-   [notespace.kinds :as kind ]))
+   [notespace.kinds :as kind]))
 
 (comment
   (note/init-with-browser)
@@ -9,30 +9,30 @@
   (note/reread-this-notespace)
   (note/render-static-html "docs/userguide-titanic.html")
 
-  (note/init)
-  )
+  (note/init))
+  
 
 
- (require '[scicloj.ml.dataset :as ds]
-          '[tech.v3.dataset.math :as ds-math]
-          '[tech.v3.datatype.functional :as dfn]
-          '[scicloj.ml.core :as ml]
-          '[scicloj.ml.metamorph :as mm]
-          '[camel-snake-kebab.core :as csk]
-          '[scicloj.metamorph.ml.loss :as loss]
-          '[clojure.string :as str]
-          '[fastmath.stats :as stats]
-          '[fastmath.random :as rnd]
-          '[fitdistr.core :as fit]
-          )
+(require '[scicloj.ml.dataset :as ds]
+         '[tech.v3.dataset.math :as ds-math]
+         '[tech.v3.datatype.functional :as dfn]
+         '[scicloj.ml.core :as ml]
+         '[scicloj.ml.metamorph :as mm]
+         '[camel-snake-kebab.core :as csk]
+         '[scicloj.metamorph.ml.loss :as loss]
+         '[clojure.string :as str]
+         '[fastmath.stats :as stats]
+         '[fastmath.random :as rnd]
+         '[fitdistr.core :as fit])
+          
 
 
 ["## Introduction "]
 
 [" In this example, we will train a model which is able to predict the survival of passengers from the Titanic dataset."
  "In a real analysis, this would contain as well explorative analysis of the data, which I will skip here,
-as the purpose is to showcase machine learning with scicloj.ml, which is about model evaluation and selection."
- ]
+as the purpose is to showcase machine learning with scicloj.ml, which is about model evaluation and selection."]
+ 
 
 
 ["### Read data"]
@@ -45,7 +45,7 @@ as the purpose is to showcase machine learning with scicloj.ml, which is about m
 (ds/column-names data)
 
 
-["We can explore teh association between the categorical columns of the dataset
+["We can explore the association between the categorical columns of the dataset
 with the :survived using cramers-v-corrected:"]
 (def categorical-feature-columns [:pclass :sex :age :parch
                                     :embarked])
@@ -54,125 +54,23 @@ with the :survived using cramers-v-corrected:"]
    %
    (stats/cramers-v-corrected
     (get  data %)
-    (:survived data)
-    ))
- categorical-feature-columns
- )
-
+    (:survived data)))
+ categorical-feature-columns)
+ 
+["In this dataset, :sex seems to be the best predictor for survival."]
 
 ["Association between the select variables:"]
 (for [c1 categorical-feature-columns c2 categorical-feature-columns]
   {[c1 c2]
-   (stats/cramers-v-corrected (get data c1) (get data  c2))}
-  )
+   (stats/cramers-v-corrected (get data c1) (get data  c2))})
+  
 
+["This shows how much the columns are correlated. "]
 
+["## clean some of the features"]
 
-
-["In this dataset, :sex seems to be the best predictor for survival."]
-
-["### Analyse distribution of :fare"]
-(defn find-best
-  [seq method ds]
-  (let [selector (if (= method :mle) last first)]
-    (dissoc (->> (map #(fit/fit method % seq {:stats #{:mle :ad :ks :cvm}}) ds)
-                 (sort-by (comp method :stats))
-                 (selector))
-            :distribution)))
-
-
-
-
-(def hist-fare
-  (->>
-   (stats/histogram (:fare data))
-   :bins
-   (map
-    #(hash-map :a (Math/round (first %)) :b (second %))
-    )
-
-   ))
-
-^kind/vega
-{:description "A simple bar chart with embedded data."
- :data {:values hist-fare}
- ;; {:values [{:a "A" :b 28} {:a "B" :b 55} {:a "C" :b 43}
- ;;           {:a "D" :b 91} {:a "E" :b 81} {:a "F" :b 53}
- ;;           {:a "G" :b 19} {:a "H" :b 87} {:a "I" :b 52}]}
- :mark        :bar
- :encoding    {:x {:field :a :type :nominal :axis {:labelAngle 0}
-                   }
-               :y {:field :b :type :quantitative}}}
-
-
-(def fare-best-ds
-  (find-best
-   (map
-    inc
-    (seq (:fare data)))
-   :mle [:normal :exponential :levy :pareto :chi-squared]))
-
-
-
-
-
-
-(def simulated-fare
- (rnd/->seq (rnd/distribution :exponential {:mean 32}) 891)
-  )
-
-(def hist-simulated-fare
-  (->>
-   (stats/histogram simulated-fare)
-   :bins
-   (map
-    #(hash-map :a (Math/round (first %)) :b (second %))
-    )
-
-   ))
-
-^kind/vega
-{:description "A simple bar chart with embedded data."
- :data {:values hist-simulated-fare}
- ;; {:values [{:a "A" :b 28} {:a "B" :b 55} {:a "C" :b 43}
- ;;           {:a "D" :b 91} {:a "E" :b 81} {:a "F" :b 53}
- ;;           {:a "G" :b 19} {:a "H" :b 87} {:a "I" :b 52}]}
- :mark        :bar
- :encoding    {:x {:field :a :type :nominal :axis {:labelAngle 0}
-                   }
-               :y {:field :b :type :quantitative}}}
-;; (rnd/cdf (:fare data))
-
-(defn perc-survived [data]
-  (let [survived
-        (-> data (ds/select-rows (comp #(= % 1) :survived)) ds/row-count)
-        non-survived
-        (-> data (ds/select-rows (comp #(= % 0) :survived)) ds/row-count)
-        survived-perc (float (/ survived (+ survived non-survived)))
-
-        ]
-    survived-perc
-    )
-  )
-
-(defn perc-survived-grouped [data col]
-  (let [grouped
-        (-> data
-            (ds/group-by col {:result-type :as-map }))]
-    (map
-     (fn [[key ds]]
-       {key (perc-survived ds)})
-     grouped)))
-
-
-
-(perc-survived-grouped data :pclass)
-
-(perc-survived-grouped data :sex)
-
-
-
-
+["The follwoing functios will be used in the pipeline. They clean the
+features to make them better predictors."]
 
 (defn categorize-cabin [data]
   (-> data
@@ -184,8 +82,8 @@ with the :survived using cramers-v-corrected:"]
            (keyword (subs
                      %
                      0 1)))
-        (:cabin data)
-        ))))
+        (:cabin data)))))
+        
 
 (defn categorize-age [data]
   (->
@@ -201,7 +99,9 @@ with the :survived using cramers-v-corrected:"]
         true :other)
      (:age data)))))
 
-
+["We want to create a new column :title which might help in the score.
+This is an example of custom function, which creates a new column from existing columns,
+which is a typical case of feature engineering."]
 
 (defn name->title [dataset]
   (-> dataset
@@ -236,11 +136,13 @@ with the :survived using cramers-v-corrected:"]
    "Mme" :mme})
 
 (defn categorize-title [data]
-(->
-   data
-   (ds/add-or-replace-column
-    :title
-    (map title-map (:title data)))))
+ (->
+    data
+    (ds/add-or-replace-column
+     :title
+     (map title-map (:title data)))))
+
+["The final pipeline contains the functions we did before."]
 
 (def pipeline-fn
   (ml/pipeline
@@ -259,128 +161,25 @@ with the :survived using cramers-v-corrected:"]
                        :cabin])
    (fn [ctx]
      (assoc ctx :categorical-ds
-            (:metamorph/data ctx)
-            ))
+            (:metamorph/data ctx)))
+
+            
    (mm/categorical->number [:survived :pclass :sex :embarked
                             :title :age-group :cabin] {} :int64)
 
    (mm/set-inference-target :survived)))
 
 
-(def pipe-ops [
-  [mm/replace-missing :embarked :value "S"]
-  [mm/replace-missing :age :value tech.v3.datatype.functional/mean]
-  [ml/lift categorize-age]
-  [ml/lift name->title]
-  [ml/lift categorize-title]
-  [ml/lift categorize-cabin]
-  [mm/select-columns [:survived
-                      :pclass
-                      :age-group
-                      :sex
-                      :embarked
-                      :title
-                      :cabin]]
-  ])
 
-(defn pprint-pipe-ops [pipe-ops]
-  (run!
-   (fn [ops]
-     (run!
-      (fn [p]
-        (print (if  (fn? p)
-                 (second (str/split (.getName (class p)) #"\$" ))
-                 p)
-               " "))
-      ops)
-     (println))
-   pipe-ops))
-
-(str/split "a$b" #"\$")
-(pprint-pipe-ops pipe-ops)
-
-(println
- (class
-  (first (first pipe-ops))))
-
-(def declartive-pipeline
-  (ml/->pipeline
-   pipe-ops
-   ))
-
-(def ctx
-  (declartive-pipeline
-   {:metamorph/data data}
-   ))
-
-
-
-
-(def ctx
-  (pipeline-fn
-
-   {:metamorph/data data}
-   ))
-
-^kind/dataset-grid
-(:metamorph/data ctx)
-
-[""]
-
-(perc-survived-grouped (:categorical-ds ctx) :sex)
-(perc-survived-grouped (:categorical-ds ctx) :pclass)
-(perc-survived-grouped (:categorical-ds ctx) :title)
-(perc-survived-grouped (:categorical-ds ctx) :age-group)
-(perc-survived-grouped (:categorical-ds ctx) :cabin)
-
-
-(map
-
- #(let [ds (:categorical-ds ctx)]
-    (hash-map
-     %
-     (stats/cramers-v-corrected
-      (get  ds %)
-      (:survived ds)
-      )))
- [:sex :pclass :title :age-group :cabin]
- )
-
-(->>
- (for [v1 [:sex :pclass :title :age-group :cabin :survived]
-       v2 [:sex :pclass :title :age-group :cabin :survived]
-       ]
-
-   (let [ds (:categorical-ds ctx)]
-     (vector
-      [v1 v2]
-      (stats/cramers-v-corrected
-       (get  ds v1)
-       (get ds v2)
-       )))
-
-
-   )
- (sort-by second)
- reverse
- )
-
-
-
-(let [ds (:categorical-ds ctx)]
-  (stats/cramers-v-corrected
-   (:sex ds )
-   (:title ds)
-   ))
-
+  
 ["The following splits the dataset in three pieces,
  train, val and test to predict on later.
 "]
 
 
 (def ds-split (first (ds/split->seq data :holdout {:ratio [0.8 0.2]
-                                                   :split-names [:train-val :test]}
-                                    )))
+                                                   :split-names [:train-val :test]})))
+                                    
 
 ["Create a sequence of train/test  (k-fold with k=10) splits used to evaluate the pipeline."]
 (def train-val-splits
@@ -391,21 +190,12 @@ with the :survived using cramers-v-corrected:"]
 
 
 
-["### Use Pclass, Sex, title, age for prediction"]
 
-["We want to create a new column :title which might help in the score.
-This is an example of custom function, which creates a new column from existing columns,
-which is a typical case of feature engineering."]
-
-
-
-
-["The pipeline definition"]
+["The full pipeline definition including the random forrest model."]
 
 (def full-pipeline-fn
   (ml/pipeline
    pipeline-fn
-
    ;; we overwrite the id, so the model function will store
    ;; it's output (the model) in the pipeline ctx under key :model
    {:metamorph/id :model}
@@ -454,17 +244,17 @@ which `model` function is in the pipeline"]
        (map
         #(hash-map :model (ml/thaw-model (get-in % [:fit-ctx :model]))
                    :metric (:metric %)
-                   :fit-ctx (:fit-ctx %)
-                   ))
+                   :fit-ctx (:fit-ctx %)))
+                   
        (sort-by :mean)
        reverse))
 
 
 ["The accuracy of the best trained model is:"]
-(-> models first :metric )
+(-> models first :metric)
 
 ["The one with the highest accuracy is then:"]
-(-> models first :model )
+(-> models first :model)
 
 
 ["We can get the predictions on new-data, which for classification contain as well
@@ -485,32 +275,21 @@ the posterior probabilities per class."]
 ^kind/dataset
 predictions
 
-;; ["We have a helper function, which allows to predict using
-;;  the best model from the result to `evaluate-pipelines`,
-;; as this is a very common case."]
-
-
-;; (def predictions
-;;   (->
-;;    (eval-mm/predict-on-best-model
-;;     evaluations
-;;     new-data
-;;     :accuracy)))
 
 ["Out of the predictions and the truth, we can construct the
  confusion matrix."]
 
 (def trueth
   (->
-   (full-pipeline-fn {:metamorph/data (:test ds-split) :metamorph/mode :fit })
+   (full-pipeline-fn {:metamorph/data (:test ds-split) :metamorph/mode :fit})
    :metamorph/data
    tech.v3.dataset.modelling/labels))
 
 ^kind/dataset
 (->
  (ml/confusion-map (:survived predictions)
-                        (:survived trueth)
-                        :none)
+                   (:survived trueth)
+                   :none)
  (ml/confusion-map->ds))
 
 ["### Hyper parameter tuning"]
@@ -539,11 +318,11 @@ which cover in a smart way the hyper-parameter space."]
   (->>
    (ml/sobol-gridsearch {:trees (ml/linear 100 500 10)
                            :split-rule (ml/categorical [:gini :entropy])
-                           :max-depth (ml/linear 1 50 10 )
+                           :max-depth (ml/linear 1 50 10)
                            :node-size (ml/linear 1 10 10)
                          :sample-rate (ml/linear 0.1 1 10)})
-   (take 100))
-  )
+   (take 100)))
+  
 
 ["Generate the 10 pipeline-fn we want to evaluate."]
 (def pipeline-fns (map make-pipeline-fn search-grid))
@@ -560,9 +339,9 @@ which cover in a smart way the hyper-parameter space."]
     :return-best-crossvalidation-only false
 
     :map-fn :pmap
-    :result-dissoc-seq []
-    }
-   ))
+    :result-dissoc-seq []}))
+    
+   
 
 ["Get the key information from the evaluations and sort by the metric function used,
  accuracy here."]
@@ -597,3 +376,40 @@ which cover in a smart way the hyper-parameter space."]
 
 ["using options: "]
 (-> best-model :fit-ctx :model :options)
+
+
+(def test-data (ds/dataset "data/titanic/test.csv"
+                           {:key-fn csk/->kebab-case-keyword}))
+
+
+
+(def predition-on-test
+  (full-pipeline-fn
+   (assoc (:fit-ctx best-model)
+          :metamorph/data (ds/add-column test-data :survived nil)
+          :metamorph/mode :transform)))
+
+
+(def prediction-ds
+  (->
+   (predition-on-test :metamorph/data)
+   (ds/add-column :passenger-id (:passenger-id test-data))
+   (ds/convert-types [:survived] :int)
+   (ds/select-columns [:passenger-id :survived 0 1])))
+
+^kind/dataset
+prediction-ds
+
+
+
+
+
+["Subimssion to Kaggle"]
+
+(def submission-ds
+  (-> prediction-ds
+      (ds/select-columns [:passenger-id :survived])
+      (ds/rename-columns {:passenger-id "PassengerId"
+                          :survived "Survived"})))
+
+(ds/write-csv! submission-ds "submission.csv")
