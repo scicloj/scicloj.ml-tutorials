@@ -117,23 +117,23 @@ which is a typical case of feature engineering."]
       (ds/drop-columns :name)))
 
 (def title-map
-  {"Major" :sir
-   "Col" :sir
-   "Rev" :sir
-   "Ms" :miss
-   "Miss" :miss
-   "Jonkheer" :sir
-   "Don" :sir
-   "Mlle" :miss
-   "Mr" :mr
-   "Master" :sir
-   "Capt" :sir
-   "Mrs" :mrs
-   "Lady" :mme
-   "Sir" :sir
-   "Dr" :sir
-   "the Countess" :mme
-   "Mme" :mme})
+  {"Major" :a
+   "Col" :a
+   "Rev" :a
+   "Ms" :b
+   "Miss" :b
+   "Jonkheer" :a
+   "Don" :a
+   "Mlle" :b
+   "Mr" :a
+   "Master" :a
+   "Capt" :a
+   "Mrs" :c
+   "Lady" :c
+   "Sir" :a
+   "Dr" :a
+   "the Countess" :c
+   "Mme" :c})
 
 (defn categorize-title [data]
  (->
