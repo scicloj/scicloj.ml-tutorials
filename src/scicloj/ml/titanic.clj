@@ -417,7 +417,7 @@ prediction-ds
 
 
 
-["Subimssion to Kaggle"]
+["Create Subimssion file to Kaggle"]
 
 (def submission-ds
   (-> prediction-ds

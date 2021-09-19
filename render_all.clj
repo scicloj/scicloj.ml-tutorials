@@ -3,19 +3,23 @@
             [notespace.api :as note]))
 
   
-(def nss ['scicloj.ml.intro
+(def nss ['scicloj.ml.tune-titanic
+          'scicloj.ml.intro
           'scicloj.ml.advanced
           'scicloj.ml.models
           'scicloj.ml.sklearnclj
           'scicloj.ml.transformers
           'scicloj.ml.third-party
-          'scicloj.ml.titanic
-          'scucloj.ml.tune-titanic])
+          'scicloj.ml.titanic])
+          
 
 (note/init :port 5678)
 
 (run!
- #(cli/eval-and-render-a-notespace {:ns %})
+
+ #(do
+    (println "render ns: " %)
+    (cli/eval-and-render-a-notespace {:ns %}))
  nss)
  
 

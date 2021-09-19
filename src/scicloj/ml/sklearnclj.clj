@@ -37,7 +37,6 @@ the following lines show how to use any sklearn model in a usual scicloj.ml pipe
 
 
 
-
             ))
 (def pipe
   (ml/pipeline

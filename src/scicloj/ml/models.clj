@@ -8,10 +8,10 @@
    [scicloj.sklearn-clj.ml]
    [clojure.string :as str]
    [scicloj.ml.ug-utils :refer :all]
-   [clojure.java.io :as io])
+   [clojure.java.io :as io]))
   ;; (:import [smile.data Movie])
 
-  )
+  
 
 ^kind/hidden
 (comment
@@ -36,17 +36,17 @@ and [Xgboost](https://xgboost.readthedocs.io/en/latest/jvm/index.html)"]
   (mm/model {:model-type :smile.classification/ada-boost
              :trees 200
              :max-depth 100
-             :max-nodes 50
-             }))
+             :max-nodes 50}))
+             
 
 (require '[scicloj.ml.core :as ml]
          '[scicloj.ml.metamorph :as mm]
-         '[scicloj.ml.dataset :refer [dataset add-column] ]
+         '[scicloj.ml.dataset :refer [dataset add-column]]
          '[scicloj.ml.dataset :as ds]
          '[tech.v3.dataset.math :as std-math]
          '[tech.v3.datatype.functional :as dtf]
-         '[scicloj.metamorph.ml.toydata :as datasets]
-         )
+         '[scicloj.metamorph.ml.toydata :as datasets])
+         
 
 ["The documentation below points as well to the javadoc and user-guide chapter (for Smile models)"]
 
@@ -74,8 +74,8 @@ to give us the importance of variables."]
    (mm/set-inference-target :class)
    (mm/categorical->number [:class])
    (mm/model
-    {:model-type :smile.classification/ada-boost
-     })))
+    {:model-type :smile.classification/ada-boost})))
+     
 
 ["We run the pipeline in :fit. As we just explore the data,
 not train.test split is needed."]
@@ -96,20 +96,20 @@ not train.test split is needed."]
    (map
     #(first (.variables %))
     (.. model formula predictors))
-   (.importance model)
-   ))
+   (.importance model)))
+   
 
 ["and we plot the variables:"]
 
- ^kind/vega
- {
+^kind/vega
+{
  :data {:values
          var-importances}
-  :width  800
-  :height 500
-  :mark {:type "bar"}
-  :encoding {:x {:field :variable :type "nominal" :sort "-y"}
-             :y {:field :importance :type "quantitative"}}}
+ :width  800
+ :height 500
+ :mark {:type "bar"}
+ :encoding {:x {:field :variable :type "nominal" :sort "-y"}
+            :y {:field :importance :type "quantitative"}}}
 
 
 ^kind/hiccup-nocode (render-key-info ":smile.classification/decision-tree")
@@ -144,8 +144,8 @@ be used by `scicloj.ml`"]
 [kroki](https://kroki.io/) service."]
 
 (with-open [out (io/output-stream
-                 (notespace.api/file-target-path "tree.svg")
-                 )]
+                 (notespace.api/file-target-path "tree.svg"))]
+                 
   (clojure.java.io/copy
    (:body
     (kroki (.dot model) :graphviz :svg))
@@ -216,8 +216,8 @@ and take the prediction and convert it from numeric into categorical:"]
 
 (def iris
   (ds/dataset
-   "https://raw.githubusercontent.com/scicloj/metamorph.ml/main/test/data/iris.csv" {:key-fn keyword})
-  )
+   "https://raw.githubusercontent.com/scicloj/metamorph.ml/main/test/data/iris.csv" {:key-fn keyword}))
+  
 
 
 
@@ -306,8 +306,8 @@ and store the coefficients for each predictor variable:"]
             (map
              #(first (.variables %))
              (seq
-              (.. model-instance formula predictors)))
-            ]
+              (.. model-instance formula predictors)))]
+            
         (map
          #(hash-map :log-lambda (dtf/log10 lambda)
                     :coefficient %1
@@ -379,8 +379,8 @@ for the disease progression:"]
 ["The truth is available in the test dataset."]
 (def diabetes-test-trueth
   (-> diabetes-test
-      :disease-progression
-      ))
+      :disease-progression))
+      
 
 
 
@@ -413,8 +413,8 @@ and observe the linear nature of the model."]
 ^kind/vega
 {:layer [
          {:data {:values (map #(hash-map :disease-progression %1 :bmi %2 :type :truth)
-                                 diabetes-test-trueth
-                                 (:bmi  diabetes-test))}
+                               diabetes-test-trueth
+                               (:bmi  diabetes-test))}
 
           :width 500
           :height 500
@@ -424,17 +424,17 @@ and observe the linear nature of the model."]
                      :color {:field :type}}}
 
          {:data {:values (map #(hash-map :disease-progression %1 :bmi %2 :type :prediction)
-                  diabetes-test-prediction
-                  (:bmi diabetes-test))}
+                          diabetes-test-prediction
+                          (:bmi diabetes-test))}
 
           :width 500
           :height 500
-          :mark {:type "line" }
+          :mark {:type "line"}
           :encoding {:x {:field :bmi :type "quantitative"}
                      :y {:field :disease-progression :type "quantitative"}
-                     :color {:field :type}}}
+                     :color {:field :type}}}]}
 
-         ]}
+         
 
 ^kind/hiccup-nocode (render-key-info ":smile.regression/random-forest")
  ^kind/hiccup-nocode (render-key-info ":smile.regression/ridge")
@@ -473,19 +473,11 @@ same data from the Iris dataset using 2 columns :sepal_width and sepal_length:"]
 
 
 
-
-
-
-
-
-
-
-
 ^kind/hidden
 (println
  (->> @scicloj.ml.core/model-definitions*
       (sort-by first)
-      (filter #(str/starts-with? (first %) ":smile.regression" ))
-      (map #(str  "^kind/hiccup-nocode (render-key-info \""   (first  %)   "\")\n")
-           )
-      ))
+      (filter #(str/starts-with? (first %) ":smile.regression"))
+      (map #(str  "^kind/hiccup-nocode (render-key-info \""   (first  %)   "\")\n"))))
+           
+      
