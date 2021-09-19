@@ -147,7 +147,8 @@ which is a typical case of feature engineering."]
 (def pipeline-fn
   (ml/pipeline
    (mm/replace-missing :embarked :value "S")
-   (mm/replace-missing :age :value  tech.v3.datatype.functional/mean)
+   (mm/replace-missing :age :value tech.v3.datatype.functional/mean)
+   (mm/update-column :parch str)
    (ml/lift categorize-age)
    (ml/lift name->title)
    (ml/lift categorize-title)
@@ -155,18 +156,20 @@ which is a typical case of feature engineering."]
    (mm/select-columns [:age-group
                        :cabin
                        :embarked
+                       :fare
+                       :parch
                        :pclass
                        :sex
                        :survived
                        :title])
-                       
+
    (fn [ctx]
      (assoc ctx :categorical-ds
             (:metamorph/data ctx)))
 
-            
+
    (mm/categorical->number [:survived :pclass :sex :embarked
-                            :title :age-group :cabin] {} :int64)
+                            :title :age-group :cabin :parch] {} :int64)
 
    (mm/set-inference-target :survived)))
 
@@ -176,10 +179,12 @@ which is a typical case of feature engineering."]
  :metamorph/data)
 
 
-  
 ["The following splits the dataset in three pieces,
  train, val and test to predict on later.
 "]
+
+
+
 
 
 (def ds-split (first (ds/split->seq data :holdout {:ratio [0.8 0.2]

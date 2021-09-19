@@ -1,5 +1,6 @@
 (ns render-all
-  (:require [notespace.cli :as cli]))
+  (:require [notespace.cli :as cli]
+            [notespace.api :as note]))
 
   
 (def nss ['scicloj.ml.intro
@@ -8,8 +9,10 @@
           'scicloj.ml.sklearnclj
           'scicloj.ml.transformers
           'scicloj.ml.third-party
-          'scicloj.ml.titanic])
+          'scicloj.ml.titanic
+          'scucloj.ml.tune-titanic])
 
+(note/init :port 5678)
 
 (run!
  #(cli/eval-and-render-a-notespace {:ns %})
