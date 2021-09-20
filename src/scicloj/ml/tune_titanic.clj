@@ -20,7 +20,10 @@
           '[tech.v3.datatype.functional :as dtfunc])
 
 (def  categorical-features  [:pclass :sex :embarked])
-(def  numeric-features [:age :sibsp :parch :fare])
+(def  numeric-features [:age :parch :fare])
+
+(defn map->vec [m] (flatten (into [] m)))
+
 
 (def data
   (-> (ds/dataset "data/titanic/train.csv"
@@ -31,26 +34,44 @@
 
 
 
-(defn make-pipeline-fns [model-type model-options]
+(defn replace-missing [ds features k v]
+  (def k k)
+  (def v v)
+  (mm/replace-missing features k v))
+
+
+(defn make-pipeline-fns [model-type options]
+
+
+
   (ml/pipeline
-   (mm/replace-missing numeric-features :value dtfunc/mean)
+   (fn [ctx]
+     (assoc ctx :pipe-options options))
+   (apply mm/replace-missing  numeric-features (map->vec (:replace-missing-options options)))
    (mm/categorical->number [:survived ] {} :int64)
+   (ml/def-ctx ctx-1)
+   (if (:scaling-options options)
+     (mm/std-scale numeric-features {}))
    (mm/set-inference-target :survived)
    {:metamorph/id :model}
-   (mm/model (merge model-options
+   (mm/model (merge (:model-options options)
                     {:model-type model-type}))))
 
 (def logistic-regression-pipelines
   (map
    #(make-pipeline-fns :smile.classification/logistic-regression %)
-   (ml/sobol-gridsearch {:lambda (ml/categorical [0.1 0.2 0.5 0.7 1])
-                         :tolerance (ml/categorical [0.1 0.01 0.001 0.0001])})))
+   (ml/sobol-gridsearch {:scaling-options {:scale? (ml/categorical [true false])}
+                         :replace-missing-options {:value (ml/categorical [dtfunc/mean dtfunc/median])}
+                         :model-options {:lambda (ml/categorical [0.1 0.2 0.5 0.7 1])
+                                         :tolerance (ml/categorical [0.1 0.01 0.001 0.0001])}})))
 
 (def random-forrest-pipelines
   (map
    #(make-pipeline-fns :smile.classification/random-forest %)
-   (ml/sobol-gridsearch {:trees (ml/categorical [5 50 100 250])
-                         :max_depth (ml/categorical [5 8 10])})))
+   (ml/sobol-gridsearch {:scaling-options {:scale? (ml/categorical [true false])}
+                         :replace-missing-options {:value (ml/categorical [dtfunc/mean dtfunc/median])}
+                         :model-options {:trees (ml/categorical [5 50 100 250])
+                                         :max_depth (ml/categorical [5 8 10])}})))
 
 (def all-pipelines (concat random-forrest-pipelines logistic-regression-pipelines))
 
@@ -72,7 +93,7 @@
 
 ["best test accuracy: " best-accuracy]
 
-(def best-options (-> best-evaluation first first :fit-ctx :model :options))
+(def best-options (-> best-evaluation first first :fit-ctx :pipe-options))
 ["best test options: " best-options]
 
 
