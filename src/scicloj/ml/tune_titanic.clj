@@ -41,7 +41,7 @@
    (apply mm/replace-missing  numeric-features (map->vec (:replace-missing-options options)))
    (mm/categorical->number [:survived ] {} :int64)
    (ml/def-ctx ctx-1)
-   (if (:scaling-options options)
+   (if (options :scaling-options :scale?)
      (mm/std-scale numeric-features {}))
    (mm/set-inference-target :survived)
    {:metamorph/id :model}
