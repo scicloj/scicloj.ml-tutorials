@@ -81,11 +81,12 @@
 
 (def best-accuracy (-> best-evaluation first first :metric))
 
-["best test accuracy: " best-accuracy]
+["best accuracy found on train data: " best-accuracy]
 
 (def best-options (-> best-evaluation first first :fit-ctx :pipe-options))
-["best test options: " best-options]
+["best options found on ttrain data: "]
 
+best-options
 
 (def best-pipe-fn
   (-> best-evaluation first first :pipe-fn))
