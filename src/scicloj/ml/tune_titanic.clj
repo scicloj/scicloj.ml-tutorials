@@ -33,16 +33,7 @@
       (ds/categorical->one-hot categorical-features)))
 
 
-
-(defn replace-missing [ds features k v]
-  (def k k)
-  (def v v)
-  (mm/replace-missing features k v))
-
-
 (defn make-pipeline-fns [model-type options]
-
-
 
   (ml/pipeline
    (fn [ctx]
