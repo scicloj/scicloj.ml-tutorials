@@ -40,7 +40,6 @@
      (assoc ctx :pipe-options options))
    (apply mm/replace-missing  numeric-features (map->vec (:replace-missing-options options)))
    (mm/categorical->number [:survived ] {} :int64)
-   (ml/def-ctx ctx-1)
    (if (options :scaling-options :scale?)
      (mm/std-scale numeric-features {}))
    (mm/set-inference-target :survived)
