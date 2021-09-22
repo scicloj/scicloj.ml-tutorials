@@ -63,7 +63,9 @@
                          :model-options {:trees (ml/categorical [5 50 100 250])
                                          :max_depth (ml/categorical [5 8 10])}})))
 
-(def all-pipelines (concat random-forrest-pipelines logistic-regression-pipelines))
+(def all-pipelines (concat random-forrest-pipelines))
+                           ;; logistic-regression-pipelines
+
 
 
 (def splits (ds/split->seq data :holdout {:ratio 0.8}))
@@ -75,7 +77,8 @@
   (ml/evaluate-pipelines
    all-pipelines
    (ds/split->seq train-ds :kfold 5)
-   ml/classification-accuracy :accuracy
+   ml/classification-accuracy
+   :accuracy
    {:return-best-crossvalidation-only true
     :return-best-pipeline-only true}))
 
@@ -84,7 +87,7 @@
 ["best accuracy found on train data: " best-accuracy]
 
 (def best-options (-> best-evaluation first first :fit-ctx :pipe-options))
-["best options found on ttrain data: "]
+["best options found on train data: "]
 
 best-options
 
@@ -110,3 +113,21 @@ best-options
  (ml/confusion-map predicted-survival-hold-out
                    (holdout-ds :survived))
  (ml/confusion-map->ds))
+
+(println
+ (ml/thaw-model
+  (-> best-evaluation first first :fit-ctx :model)))
+
+(ml/explain
+
+ (-> best-evaluation first first :fit-ctx :model))
+
+(clojure.reflect/reflect
+ (ml/thaw-model
+  (-> best-evaluation first first :fit-ctx :model)))
+
+(print
+ (seq
+  (.importance
+   (ml/thaw-model
+    (-> best-evaluation first first :fit-ctx :model)))))

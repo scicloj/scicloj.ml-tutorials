@@ -1,25 +1,38 @@
 (ns scicloj.ml.third-party
-(:require [notespace.api :as note]
-          [notespace.kinds :as kind ]
+ (:require [notespace.api :as note]
+           [notespace.kinds :as kind]
 
-          [scicloj.ml.ug-utils :refer :all]
-          [dk.simongray.datalinguist.ml.crf]
-          [clj-djl.mmml]))
+           [scicloj.ml.ug-utils :refer :all]
+           [dk.simongray.datalinguist.ml.crf]
+           [clj-djl.mmml]))
 
 (comment
   (note/init-with-browser)
   (note/eval-this-notespace)
   (note/reread-this-notespace)
   (note/render-static-html "docs/userguide-third_party.html")
-  (note/init)
-  )
+  (note/init))
+  
 
 
 
 (require '[scicloj.ml.core :as ml]
          '[scicloj.ml.metamorph :as mm]
          '[scicloj.ml.dataset  :as ds]
-         '[tech.v3.datatype.functional :as dfn])
+         '[tech.v3.datatype.functional :as dfn]
+         '[scicloj.ml.xgboost])
+
+["# xgboost"]
+
+;; (def train-ds
+;;   (ds/dataset
+;;    "http://d2l-data.s3-accelerate.amazonaws.com/kaggle_house_pred_train.csv"))
+
+;; (ml/fit train-ds)
+
+
+;; (scicloj.metamorph.ml/train train-ds {:model-type :xgboost/classification})
+
 
 
 ["# Deep learning models via clj-djl "]
@@ -61,16 +74,16 @@
 
 (def  learning-rate 0.05)
 (defn net [] (nn/sequential {:blocks (nn/linear {:units 1})
-                         :initializer (nn/normal-initializer)}))
+                             :initializer (nn/normal-initializer)}))
 (defn cfg [] (t/training-config {:loss (loss/l2-loss)
-                             :optimizer (optimizer/sgd
-                                         {:tracker (tracker/fixed learning-rate)})
-                             :evaluator (t/accuracy)
-                             :listeners (listener/logging)}))
+                                 :optimizer (optimizer/sgd
+                                             {:tracker (tracker/fixed learning-rate)})
+                                 :evaluator (t/accuracy)
+                                 :listeners (listener/logging)}))
 
 (def pipe
   (ml/pipeline
-   (mm/drop-columns ["Id" ])
+   (mm/drop-columns ["Id"])
    (mm/set-inference-target "SalePrice")
    (tech.v3.dataset.metamorph/replace-missing ds/numeric :value 0)
    (tech.v3.dataset.metamorph/replace-missing ds/categorical :value "None")
@@ -93,8 +106,8 @@
 (def trained-pipeline
   (pipe {:metamorph/data (ds/concat train-ds test-ds)
          :metamorph/mode :fit
-         :ds-indeces (range (ds/row-count train-ds))
-         }))
+         :ds-indeces (range (ds/row-count train-ds))}))
+         
 
 (def predicted-pipeline
   (pipe
@@ -107,8 +120,8 @@
 
 ( get
  (:metamorph/data trained-pipeline)
- "SalePrice"
- )
+ "SalePrice")
+ 
 
 
 ^kind/hiccup-nocode
