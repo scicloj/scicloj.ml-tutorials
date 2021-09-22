@@ -20,18 +20,47 @@
          '[scicloj.ml.metamorph :as mm]
          '[scicloj.ml.dataset  :as ds]
          '[tech.v3.datatype.functional :as dfn]
-         '[scicloj.ml.xgboost])
+         '[clojure.tools.namespace.find :as ns-find]
+         '[clojure.java.classpath :as cp]
+         '[scicloj.ml.xgboost]
+         '[camel-snake-kebab.core :as csk])
+
+(comment
+  (->> (cp/classpath)
+       (ns-find/find-ns-decls)
+       (map second)
+       (filter #(clojure.string/includes? (name %) "kebab"))))
+
+
+
 
 ["# xgboost"]
 
-;; (def train-ds
-;;   (ds/dataset
-;;    "http://d2l-data.s3-accelerate.amazonaws.com/kaggle_house_pred_train.csv"))
-
-;; (ml/fit train-ds)
+(def train-ds
+  (ds/dataset
+   "http://d2l-data.s3-accelerate.amazonaws.com/kaggle_house_pred_train.csv" {:key-fn csk/->kebab-case-keyword}))
 
 
-;; (scicloj.metamorph.ml/train train-ds {:model-type :xgboost/classification})
+(def pipe-fn
+  (ml/pipeline
+   (mm/replace-missing :type/string "NA")
+   (mm/replace-missing :type/numerical :value 0)
+   (mm/categorical->number  #(ds/select-columns % :type/string))
+   (mm/set-inference-target :sale-price)
+   {:metamorph/id :model} (mm/model {:model-type :xgboost/linear-regression})))
+
+
+
+(def fitted-ctx
+  (ml/fit-pipe train-ds pipe-fn))
+
+(def model-instance
+  (-> fitted-ctx :model ml/thaw-model))
+
+
+^kind/dataset
+(ml/explain (-> fitted-ctx :model))
+
 
 
 
