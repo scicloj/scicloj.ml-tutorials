@@ -1,7 +1,7 @@
 (ns scicloj.ml.advanced
   (:require
    [notespace.api :as note]
-   [notespace.kinds :as kind ]
+   [notespace.kinds :as kind]
    [scicloj.ml.ug-utils :refer :all]))
 
 ^kind/hidden
@@ -10,7 +10,7 @@
   (note/eval-this-notespace)
   (note/reread-this-notespace)
   (note/render-static-html "docs/userguide-advanced.html")
-  (note/init) )
+  (note/init))
 
 
 
@@ -29,7 +29,7 @@ handle them in the same way."]
  is supposed to manipulate. The type of object can be anything for `metamorph.ml`,
 but all functionality in `scicloj.ml` requires it to be a `tech.v3.dataset`
  instance. For further information see in
- [metamorph](https://github.com/scicloj/metamorph)" ]
+ [metamorph](https://github.com/scicloj/metamorph)"]
 
 
 ["`:metamorph/mode` is used by 'model' functions, which get fitted from data or transform data.
@@ -52,8 +52,8 @@ step function is executed:
   (ml/pipeline
 ;;  step 1
 ;;  step 2
-   {:metamorph/id :my-model} (mm/select-columns [:time])
-   ))
+   {:metamorph/id :my-model} (mm/select-columns [:time])))
+   
 
 ["This map can have any key / value, which might be useful for injecting other static data into the pipeline."]
 
@@ -81,11 +81,11 @@ at keys `:scicloj.metamorph.ml/feature-ds` and  `:scicloj.metamorph.ml/target-ds
 
 (def pipe-fn
   (ml/pipeline
-   (mm/select-columns [:time])
+   (mm/select-columns [:time])))
    ;; (mm/step-2)
    ;; (mm/step-3)
    ;; (mm/step-4)
-   ))
+   
 
 (def trained-ctx
   (pipe-fn {:metamorph/data train-data
@@ -100,11 +100,11 @@ trained-ctx
   (ml/pipeline
    (fn [ctx] (def ctx-1 ctx) ctx)
    (mm/select-columns [:time])
-   (fn [ctx] (def ctx-2 ctx) ctx)
+   (fn [ctx] (def ctx-2 ctx) ctx)))
    ;; (mm/step-2)
    ;; (mm/step-3)
    ;; (mm/step-4)
-   ))
+   
 
 (def ctx
   (pipe-fn {:metamorph/data train-data
@@ -126,15 +126,15 @@ ctx-2
 ["1. Data manipulation functions. Use only :metamorph/data .
   2. Model type of functions. They use :metamorph/data , :metamorph/mode and :metamorph/id  and behave different in mode :fit and :mode transform. Eventually they use other keys in the context.
   2a. This variants of type 2), might use non standard keys to pass data between different steps and therefore collaborate.
-"
- ]
+"]
+ 
 
 ["## Custom dataset->dataset transforming functions "]
 
 ["Most steps of a pipeline are about modifying the dataset, so most custom code will be here.
 In machine learning, this is as well known as feature engineering, as new features get created
-from existing features."
- ]
+from existing features."]
+ 
 
 ["For a custom data manipulation function to be able to participate in a metamorph pipeline
 it needs to:
@@ -231,7 +231,7 @@ the value for future time steps.
                :val [1 3 4 4 20 3 4 18 39 23]}))
 (def test-data
   (ds/dataset {:time [11 12 13 14 15]
-               :val [nil nil  nil nil nil ]}))
+               :val [nil nil  nil nil nil]}))
 
 ["Next we create the model function. It makes use of namespaced
 key destructuring, which allows very compact code.
@@ -248,8 +248,8 @@ run in mode :transform.
 
 Conceptually this function is a pair of train/predict functions, which behaves like `train` in mode :fit and
 `predict` in mode :transform.
-"
- ]
+"]
+ 
 
 (defn mean-model []
   (fn [{:metamorph/keys [id data mode] :as ctx}]
@@ -261,20 +261,20 @@ Conceptually this function is a pair of train/predict functions, which behaves l
       :transform
       (let [mean-so-far (get ctx id)
             updated-ds (-> data
-                           (ds/add-or-replace-column :val mean-so-far ))]
+                           (ds/add-or-replace-column :val mean-so-far))]
         (assoc ctx :metamorph/data updated-ds)))))
 
 ["The pipeline has only one step, the model function itself."]
 (def pipe-fn
   (ml/pipeline
-   (mean-model)
-   ))
+   (mean-model)))
+   
 
 ["We run the training as usual, passing a map of data and mode :fit. (The id gets added automatically)"]
 
 (def trained-ctx
   (pipe-fn {:metamorph/data train-data
-         :metamorph/mode :fit}))
+            :metamorph/mode :fit}))
 
 [ "Same for the prediction, in mode :transform, merging in the trained-ctx but overwriting data and mode"]
 
@@ -341,12 +341,12 @@ allow to hyper-tune the model parameters but as well the whole transformation pi
  "It takes as basic input a `sequence of pipeline functions` , a `sequence of pairs of train and test datasets`
 and  a `metric function`. It will then do a nested loop of all pipelines and all
 train/test pairs and calculate the given  model metrics for all combinations.
-(which means to `train` and `evaluate` all pipelines using the train/test dataset pairs. "
- ]
+(which means to `train` and `evaluate` all pipelines using the train/test dataset pairs. "]
+ 
 
 ["By preparing the seq of pipelines and the seq of train/test pairs accordingly,
-various types of grid search with various cross-validation schemes can be realized."
- ]
+various types of grid search with various cross-validation schemes can be realized."]
+ 
 
 
 
@@ -356,18 +356,18 @@ various types of grid search with various cross-validation schemes can be realiz
 the `evaluate-pipelines` function can be applied to a large variety of used cases. We will see below some examples, how to generate this
 sequences."]
 
-(def all-pipelines
+(def all-pipelines)
   ;; whatever needed to get all pipeline fns
   ;; typically these are variations of one single pipeline, where some parameters are different
   ;; (but this is not required, the pipelines can be completely different)
-  )
+  
 
-(def train-test-data-pairs
+(def train-test-data-pairs)
   ;; some form of split of test data, such as:
   ;; holdout
   ;; k-fold
   ;; leave-one-out
-  )
+  
 
 ;; evaluate all pipelines
 (comment
@@ -388,7 +388,7 @@ sequences."]
 ["Now we create a seq of pipeline fns, in this case having only **one** pipeline function"]
 (def pipe-fn
   (ml/pipeline
-   (mm/select-columns [:Survived :Pclass ])
+   (mm/select-columns [:Survived :Pclass])
    (mm/categorical->number [:Survived :Pclass])
    (mm/set-inference-target :Survived)
    (mm/model {:model-type :smile.classification/logistic-regression})))
@@ -399,8 +399,8 @@ sequences."]
 
 ["For creating train/test pairs, the function `scicloj.ml.dataset/split->seq`
  creates them in the right format (list of maps with keys :train and :test and value being
-a `tech.ml.dataset`)"
- ]
+a `tech.ml.dataset`)"]
+ 
 
 (def train-test-data-pairs (ds/split->seq titanic-data :holdout))
 
@@ -443,7 +443,7 @@ taking parameters, see below).
 
 (def pipe-fn-1
   (ml/pipeline
-   (mm/select-columns [:Survived :Pclass ])
+   (mm/select-columns [:Survived :Pclass])
    (mm/categorical->number [:Survived :Pclass])
    (mm/set-inference-target :Survived)
    (mm/model {:model-type :smile.classification/logistic-regression
@@ -451,7 +451,7 @@ taking parameters, see below).
 
 (def pipe-fn-2
   (ml/pipeline
-   (mm/select-columns [:Survived :Pclass ])
+   (mm/select-columns [:Survived :Pclass])
    (mm/categorical->number [:Survived :Pclass])
    (mm/set-inference-target :Survived)
    (mm/model {:model-type :smile.classification/logistic-regression
@@ -481,16 +481,16 @@ taking parameters, see below).
 
 ["Now we will **generate** our seq of pipeline functions."
  "First we need a function which creates a pipeline function
-from parameters:"
- ]
+from parameters:"]
+ 
 
 (defn create-pipe-fn [params]
   (ml/pipeline
-   (mm/select-columns [:Survived :Pclass ])
+   (mm/select-columns [:Survived :Pclass])
    (mm/categorical->number [:Survived :Pclass])
    (mm/set-inference-target :Survived)
    {:metamorph/id :model} (mm/model (merge {:model-type :smile.classification/logistic-regression}
-                    params))))
+                                     params))))
 
 
 ["This function can now be called to produce a pipeline fn:"]
@@ -513,8 +513,8 @@ intervals in the boundaries of the options."
  "So taking the first 20 of these covers already the full space coarse-grained.
 See help of the ml/sobol-gridsearch for more information."
  "This gives us 20 grid points for our parameter search,
-which we can easily transform in a sequence of 20 pipeline functions:"
- ]
+which we can easily transform in a sequence of 20 pipeline functions:"]
+ 
 
 (def all-pipelines
   (map create-pipe-fn all-options))
@@ -540,6 +540,16 @@ which we can easily transform in a sequence of 20 pipeline functions:"
        (sort-by :metric)
        last))
 
+
+
+
+
+
+
+
+
+
+
 ["with a classification accuracy of:"]
 (:metric best-result)
 
@@ -549,7 +559,7 @@ which we can easily transform in a sequence of 20 pipeline functions:"
 ["Out of this we can get the trained logistic regression model
 (in this case a Smile Java object), "]
 (def best-logistic-regression-model
-  (ml/thaw-model (get-in best-result [:fit-ctx :model] )))
+  (ml/thaw-model (get-in best-result [:fit-ctx :model])))
 
 best-logistic-regression-model
 
@@ -559,11 +569,11 @@ best-logistic-regression-model
 
 ["Or taking the best pipeleine,"]
 (def best-pipe-fn
-  (:pipe-fn best-result ))
+  (:pipe-fn best-result))
 
 ["the best context"]
 (def best-fit-ctx
-  (:fit-ctx best-result ))
+  (:fit-ctx best-result))
 
 ["and use this for predicting on new data:"]
 
@@ -576,9 +586,87 @@ best-logistic-regression-model
  (ds/column-values->categorical :Survived))
 
 
+["### Learning curve"]
+
+(def train-val-split
+  (first
+   (ds/split->seq  titanic-data :holdout {:ratio 0.8})))
+
+(def training-curve-splits
+  (map
+   #(hash-map :train (ds/head (:train train-val-split) %)
+              :test (:test train-val-split))
+   (range 200 (ds/row-count (:train train-val-split)) 10)))
+
+
+(map
+ #(-> % :train ds/row-count)
+ training-curve-splits)
+
+(def training-curve-evaluations
+  (ml/evaluate-pipelines [best-pipe-fn]
+                         training-curve-splits
+                         ml/classification-accuracy
+                         :accuracy
+                         {:return-best-pipeline-only false
+                          :return-best-crossvalidation-only false
+                          :result-dissoc-in-seq []}))
+(def train-counts
+  (->> training-curve-evaluations flatten (map #(-> % :fit-ctx :metamorph/data ds/row-count))))
+
+(count (flatten training-curve-evaluations))
+
+(def metrices
+  (->> training-curve-evaluations flatten (map #(-> % :metric))))
+
+(def train-metrices
+  (->> training-curve-evaluations flatten (map #(-> % :metric-train))))
+
+(def traing-curve-plot-data
+  (reverse
+   (sort-by :metric
+            (flatten
+             (map
+              #(vector (zipmap [:count :metric :type] [%1 %2 :test])
+                       (zipmap [:count :metric :type] [%1 %3 :train]))
+              train-counts
+              metrices
+              train-metrices)))))
+
+
+^kind/vega
+{
+ :data {:values traing-curve-plot-data}
+
+ :width 500
+ :height 500
+ :mark {:type "point"}
+ :encoding {:x {:field :count :type "quantitative"}
+            :y {:field :metric :type "quantitative"}
+            :color {:field :type}}}
+
+
+
+
+
+
+(->>
+ (map
+  #(hash-map :test-metric %1
+             :train-metric %2
+             :better? (if (> %1 %2) :test :train))
+  (->> eval-results flatten (map :metric))
+  (->> eval-results flatten (map :metric-train)))
+ (map :better?)
+ frequencies)
+
+
 
 ["### Handling of categorical data"]
 ["Todo"]
+
+
+
 
 ^kind/hidden
 ["## More advanced use case, as we need to pass the vocab size between steps"]
@@ -594,7 +682,7 @@ best-logistic-regression-model
 
   (def pipe-fn
     (ml/pipeline
-     (mm/select-columns [:Text :Score ])
+     (mm/select-columns [:Text :Score])
      (mm/count-vectorize :Text :bow)
      (mm/bow->sparse-array :bow :bow-sparse)
      (mm/set-inference-target :Score)
@@ -604,19 +692,19 @@ best-logistic-regression-model
      (fn [ctx]
        (let [p (-> ctx :scicloj.ml.smile.metamorph/bow->sparse-vocabulary
                    :vocab
-                   count
-                   )]
+                   count)]
+                   
          ((mm/model {:p p
                      :model-type :smile.classification/maxent-multinomial
                      :sparse-column :bow-sparse})
-          ctx)
-         )
-       ctx
-       )
-     ))
+          ctx))
+         
+       ctx)))
+       
+     
 
   (def trained-ctx
     (pipe-fn {:metamorph/data (:train reviews-split)
-              :metamorph/mode :fit}))
+              :metamorph/mode :fit})))
 
-  )
+  
