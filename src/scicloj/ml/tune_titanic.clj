@@ -24,6 +24,7 @@
 
 (defn map->vec [m] (flatten (into [] m)))
 
+["Preproceesing Pipelines including feature engineering"]
 
 (def data
   (-> (ds/dataset "data/titanic/train.csv"
@@ -31,6 +32,7 @@
       (ds/select-columns (concat categorical-features numeric-features [:survived]))
       (ds/replace-missing categorical-features :value "missing")
       (ds/categorical->one-hot categorical-features)))
+
 
 
 (defn make-pipeline-fns [model-type options]
@@ -64,14 +66,13 @@
                                          :max_depth (ml/categorical [5 8 10])}})))
 
 (def all-pipelines (concat random-forrest-pipelines))
-                           ;; logistic-regression-pipelines
 
-
-
+["Simple split"]
 (def splits (ds/split->seq data :holdout {:ratio 0.8}))
 (def train-ds ((first splits) :train))
 (def holdout-ds ((first splits) :test))
 
+["Tune hyperparameter by evaluating all pipelines/models "]
 
 (def best-evaluation
   (ml/evaluate-pipelines
@@ -114,18 +115,16 @@ best-options
                    (holdout-ds :survived))
  (ml/confusion-map->ds))
 
-(println
- (ml/thaw-model
-  (-> best-evaluation first first :fit-ctx :model)))
-
-(ml/explain
-
+["Smile model object:"]
+(ml/thaw-model
  (-> best-evaluation first first :fit-ctx :model))
 
 
 
-(print
- (seq
-  (.importance
-   (ml/thaw-model
-    (-> best-evaluation first first :fit-ctx :model)))))
+
+["Feature importance:"]
+
+(seq
+ (.importance
+  (ml/thaw-model
+   (-> best-evaluation first first :fit-ctx :model))))
