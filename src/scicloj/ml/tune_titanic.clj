@@ -122,9 +122,7 @@ best-options
 
  (-> best-evaluation first first :fit-ctx :model))
 
-(clojure.reflect/reflect
- (ml/thaw-model
-  (-> best-evaluation first first :fit-ctx :model)))
+
 
 (print
  (seq
