@@ -128,3 +128,50 @@ best-options
  (.importance
   (ml/thaw-model
    (-> best-evaluation first first :fit-ctx :model))))
+
+
+
+["## nested cross validation"]
+
+(comment
+
+  (require '[scicloj.ml.nested-cv :as nested-cv])
+
+
+  (def nested-cv-result
+    (doall
+     (nested-cv/nested-cv data all-pipelines
+                          ml/classification-accuracy
+                          :accuracy 10 5)))
+
+
+
+  ["nested cv best models metrics"]
+  (map :metric nested-cv-result)
+
+  (def final-model-by-cv
+    (let [inner-k-fold (ds/split->seq data :kfold {:k 5})
+          evaluation (ml/evaluate-pipelines
+                      all-pipelines
+                      inner-k-fold
+                      ml/classification-accuracy
+                      :accuracy)
+          fit-ctx (-> evaluation first first :fit-ctx)
+          best-pipefn (-> evaluation first first :pipe-fn)]
+      {:best-pipe-fn best-pipefn
+       :fit-ctx fit-ctx}))
+
+  (def final-model
+    ((:best-pipe-fn final-model-by-cv) {:metamorph/data data :metamorph/mode :fit}))
+
+  ["Final best model"]
+  (-> final-model
+      (assoc-in [ :fit-ctx :model :model-data] nil)
+      (assoc-in [:metamorph/data ] nil)
+      (assoc-in [:model :model-data] nil))
+
+  (def repeated
+    (ds/split->seq data :kfold {:k 5 :repeats 5}))
+
+  (-> (nth repeated 5) :train :age seq (#(take 5 %)))
+  (-> (nth repeated 10) :train :age seq (#(take 5 %))))
