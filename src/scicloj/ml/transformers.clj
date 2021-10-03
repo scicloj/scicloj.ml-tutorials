@@ -2,20 +2,22 @@
   (:require
    [notespace.api :as note]
    [notespace.kinds :as kind]
-   [scicloj.ml.metamorph :as mm]
-   )
-  )
+   [scicloj.ml.metamorph :as mm]))
+   
+  
 
 (comment
   (note/init-with-browser)
   (note/eval-this-notespace)
-  (note/render-static-html "docs/userguide-transformers.html")
-  )
+  (note/render-static-html "docs/userguide-transformers.html"))
+  
 
 (require '[scicloj.ml.core :as ml]
          '[scicloj.ml.dataset :as ds]
-         '[scicloj.ml.metamorph :as mm]
-         )
+         '[scicloj.ml.metamorph :as mm])
+
+
+
 ^kind/hidden
 (defn docu-fn [v]
   (let [m (meta v)]
@@ -25,20 +27,20 @@
       "----------------------------------------------------------"
       "__Clojure doc__:\n"
       (:doc m)
-      "----------------------------------------------------------"
-      ]
-     kind/md-nocode
-     )))
+      "----------------------------------------------------------"]
+      
+     kind/md-nocode)))
+     
 
 
 
 (docu-fn (var mm/count-vectorize))
 
 ["In the following we transform the text given in a dataset into a
- map of token counts applying some default text normalization." ]
+ map of token counts applying some default text normalization."]
 (def data (ds/dataset {:text ["Hello Clojure world, hello ML word !"
-                              "ML with Clojure is fun"
-                              ]}))
+                              "ML with Clojure is fun"]}))
+                              
 
 ^kind/dataset-grid
 data
@@ -54,7 +56,7 @@ data
 fitted-ctx
 
 (def bow-ds
-(:metamorph/data fitted-ctx))
+ (:metamorph/data fitted-ctx))
 
 ^kind/dataset
 bow-ds
@@ -68,8 +70,8 @@ bow-ds
   (ml/fit
    data
    (mm/count-vectorize :text :bow {:stopwords ["clojure"]
-                                   :stemmer :none
-                                   })))
+                                   :stemmer :none})))
+                                   
 
 fitted-ctx
 
@@ -81,8 +83,8 @@ fitted-ctx
    (mm/count-vectorize
     :text :bow
     {:text->bow-fn (fn [text options]
-                     {:a 1 :b 2
-                      })})))
+                     {:a 1 :b 2})})))
+                      
 fitted-ctx
 
 
@@ -141,8 +143,8 @@ the vocabulary from the bow maps."]
    (mm/bow->SparseArray
     :bow :sparse
     {:create-vocab-fn
-     (fn [bow] (scicloj.ml.smile.nlp/->vocabulary-top-n bow 1))
-     })))
+     (fn [bow] (scicloj.ml.smile.nlp/->vocabulary-top-n bow 1))})))
+     
 
 ctx-sparse
 
@@ -153,8 +155,8 @@ ctx-sparse
     :bow :sparse
     {:create-vocab-fn
      (fn [_]
-       ["hello" "fun"]
-       )})))
+       ["hello" "fun"])})))
+       
 
 ctx-sparse
 
@@ -184,9 +186,9 @@ https://scicloj.github.io/scicloj.ml/userguide-models.html
   (->
    (ds/dataset
     "https://raw.githubusercontent.com/scicloj/metamorph.ml/main/test/data/iris.csv" {:key-fn keyword})
-   (tech.v3.dataset.print/print-range 5)
-   )
-  )
+   (tech.v3.dataset.print/print-range 5)))
+   
+  
 
 ^kind/dataset
 iris
@@ -207,8 +209,8 @@ iris
 (def fitted-ctx
   (ml/fit
    (:train-ds train-test)
-   pipe-fn
-   ))
+   pipe-fn))
+   
 
 ^kind/hidden
 (defn dissoc-in [m ks]
@@ -223,12 +225,12 @@ iris
 ["and then prediction on test"]
 
 (def transformed-ctx
-  (ml/transform-pipe (:test-ds train-test) pipe-fn fitted-ctx ))
+  (ml/transform-pipe (:test-ds train-test) pipe-fn fitted-ctx))
 
 (-> transformed-ctx
     (dissoc-in [:model :model-data])
-    (update-in [:metamorph/data ] #(tech.v3.dataset.print/print-range % 5))
-    )
+    (update-in [:metamorph/data ] #(tech.v3.dataset.print/print-range % 5)))
+    
 
 ["and we get the predictions: "]
 ^kind/dataset
@@ -297,8 +299,8 @@ sonar
 
 ["First we create and run  a pipeline which does the PCA."
  "In this pipeline we do not fix the number of columns, as we want to
-plot the result for all numbers of components (up to 60) "
- ]
+plot the result for all numbers of components (up to 60) "]
+ 
 (def fitted-ctx
   (ml/fit
    sonar
@@ -311,7 +313,7 @@ plot the result for all numbers of components (up to 60) "
 into vega lite compatible format for plotting"]
 ["It accesses the underlying Smile Java object to get the data on
 the cumulative variance for each PCA component."]
-(defn create-plot-data [ctx ]
+(defn create-plot-data [ctx]
   (map
    #(hash-map :principal-component %1
               :cumulative-variance %2)
@@ -344,8 +346,8 @@ is enough, which would result in keeping the first 2 dimensions."]
    sonar
    (mm/reduce-dimensions :pca-cov 2
                          col-names
-                         {}
-                         )
+                         {})
+                         
    (mm/select-columns  [:material "pca-cov-0" "pca-cov-1"])
    (mm/shuffle)))
 

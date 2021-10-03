@@ -17,6 +17,7 @@
           '[scicloj.ml.core :as ml]
           '[scicloj.ml.metamorph :as mm]
           '[camel-snake-kebab.core :as csk]
+          '[scicloj.metamorph.ml.evaluation-handler :as eval-hn]
           '[tech.v3.datatype.functional :as dtfunc])
 
 (def  categorical-features  [:pclass :sex :embarked])
@@ -34,24 +35,40 @@
       (ds/categorical->one-hot categorical-features)))
 
 
+(defn replace-missing [options]
+  (fn [ctx]
+    (def ctx ctx)
+    (def options options)
+    ( (apply mm/replace-missing numeric-features (map->vec (:replace-missing-options options))) ctx)))
 
-(defn make-pipeline-fns [model-type options]
+(defn maybe-std-scale [options]
+  (fn [ctx]
+    (def ctx ctx)
+    (def options options)
+    (if (-> options :scaling-options :scale?)
+      ((mm/std-scale numeric-features {})
+       ctx)
+      ctx)))
 
-  (ml/pipeline
-   (fn [ctx]
-     (assoc ctx :pipe-options options))
-   (apply mm/replace-missing  numeric-features (map->vec (:replace-missing-options options)))
-   (mm/categorical->number [:survived ] {} :int64)
-   (if (options :scaling-options :scale?)
-     (mm/std-scale numeric-features {}))
-   (mm/set-inference-target :survived)
-   {:metamorph/id :model}
-   (mm/model (merge (:model-options options)
-                    {:model-type model-type}))))
+(defn assoc-pipe-opts [options]
+  (fn [ctx]
+    (assoc ctx :pipe-options options)))
+
+
+(defn make-decl-pipeline[model-type options]
+  (def options options)
+  [[::assoc-pipe-opts options]
+   [::replace-missing options]
+   [:mm/categorical->number [:survived ] {} :int64]
+   [::maybe-std-scale options]
+   [:mm/set-inference-target :survived]
+   {:metamorph/id :model} [:mm/model (merge (:model-options options) {:model-type model-type})]])
+
+(ml/->pipeline [[::replace-misssing options]])
 
 (def logistic-regression-pipelines
   (map
-   #(make-pipeline-fns :smile.classification/logistic-regression %)
+   #(make-decl-pipeline :smile.classification/logistic-regression %)
    (ml/sobol-gridsearch {:scaling-options {:scale? (ml/categorical [true false])}
                          :replace-missing-options {:value (ml/categorical [dtfunc/mean dtfunc/median])}
                          :model-options {:lambda (ml/categorical [0.1 0.2 0.5 0.7 1])
@@ -59,13 +76,18 @@
 
 (def random-forrest-pipelines
   (map
-   #(make-pipeline-fns :smile.classification/random-forest %)
+   #(make-decl-pipeline :smile.classification/random-forest %)
    (ml/sobol-gridsearch {:scaling-options {:scale? (ml/categorical [true false])}
                          :replace-missing-options {:value (ml/categorical [dtfunc/mean dtfunc/median])}
                          :model-options {:trees (ml/categorical [5 50 100 250])
                                          :max_depth (ml/categorical [5 8 10])}})))
 
 (def all-pipelines (concat random-forrest-pipelines))
+
+
+
+(def pipe-fns
+  (mapv ml/->pipeline all-pipelines))
 
 ["Simple split"]
 (def splits (ds/split->seq data :holdout {:ratio 0.8}))
@@ -74,16 +96,18 @@
 
 ["Tune hyperparameter by evaluating all pipelines/models "]
 
+(def files [atom []])
 (def best-evaluation
   (ml/evaluate-pipelines
    all-pipelines
    (ds/split->seq train-ds :kfold 5)
    ml/classification-accuracy
    :accuracy
-   {:return-best-crossvalidation-only true
+   {;; :evaluation-handler-fn (eval-hn/nippy-handler files "/tmp/titanic" "/home/carsten/Dropbox/sources/")
+    :return-best-crossvalidation-only true
     :return-best-pipeline-only true}))
 
-(def best-accuracy (-> best-evaluation first first :metric))
+(def best-accuracy (-> best-evaluation first first :train-transform :metric))
 
 ["best accuracy found on train data: " best-accuracy]
 
@@ -94,6 +118,41 @@ best-options
 
 (def best-pipe-fn
   (-> best-evaluation first first :pipe-fn))
+
+best-pipe-fn
+
+(def best-pipe-decl
+  (-> best-evaluation first first :pipe-decl))
+
+["best pipe"]
+best-pipe-decl
+
+(def source-refs
+  (:fn-sources
+   (scicloj.metamorph.ml.evaluation-handler/get-source-information
+    [best-pipe-decl]
+    *ns*
+    (-> #'data meta :file))))
+
+["pipe sources"]
+
+(->>
+ source-refs
+ (filter #(let [v (val %)
+                code-source (:code-source v)
+                code-source-local (:code-local-source v)]
+            (or code-source code-source-local)))
+ (map (fn [[k v]]
+        (def k k)
+        (def v v)
+        {k
+         (str (:code-source v) (:code-local-source v))})))
+
+
+
+
+ 
+
 
 (def predicted-survival-hold-out
   (->

@@ -9,8 +9,8 @@
             [tablecloth.api :as tc]
             [libpython-clj2.python :as py]
             [tech.v3.datatype.functional :as dtf]
-            [clj-http.client :as client]
-            ))
+            [clj-http.client :as client]))
+            
 
 (defn kroki [s type format]
   (client/post "https://kroki.io/" {:content-type :json
@@ -35,9 +35,9 @@
 (defn dataset->md-hiccup [mds]
   (let [height (* 46 (- (count (str/split-lines (str mds))) 2))
         height-limit (min height 800)]
-    [:div {:class "table table-striped table-hover table-condensed table-responsive"
+    [:div {:class "table table-striped table-hover table-condensed table-responsive"}
            ;; :style {:height (str height-limit "px")}
-           }
+           
      (view/markdowns->hiccup mds)]))
 
 (defmethod kind/kind->behaviour ::dataset-nocode
@@ -50,14 +50,14 @@
    (->
     (tc/dataset
      (or
-      (get-in @scicloj.ml.core/model-definitions* [model-key :options]  )
-      {:name [] :type [] :default []}
-      ))
-    (tc/reorder-columns :name :type :default)
-    )
-   ::dataset-nocode
-   )
-  )
+      (get-in @scicloj.ml.core/model-definitions* [model-key :options])
+      {:name [] :type [] :default []}))
+      
+    (tc/reorder-columns :name :type :default))
+    
+   ::dataset-nocode))
+   
+  
 
 
 ;; (->
@@ -88,14 +88,14 @@
   (if (empty? x)
     [:div ""]
     [:div
-     [:a {:href x} text]]
-    )
-  )
+     [:a {:href x} text]]))
+    
+  
 
 (defn render-key-info [prefix]
   (->> @scicloj.ml.core/model-definitions*
        (sort-by first)
-       (filter #(str/starts-with? (first %) prefix ))
+       (filter #(str/starts-with? (first %) (str prefix)))
        (map
         (fn [[key definition]]
           [:div
@@ -105,7 +105,7 @@
 
 
            [:span
-            (dataset->md-hiccup (docu-options key) )]
+            (dataset->md-hiccup (docu-options key))]
 
            [:span
             (docu-doc-string key)]
@@ -118,8 +118,8 @@
            ;;                           "" ))
            ;;            :bg-class "bg-light"}]]
 
-           [:hr]
-           ]))))
+           [:hr]]))))
+           
 
 (defn remove-deep [key-set data]
   (clojure.walk/prewalk (fn [node] (if (map? node)
@@ -136,9 +136,9 @@
          (mm/select-columns (concat [:species] cols))
          (mm/set-inference-target :species)
          (mm/categorical->number [:species])
-         (mm/model model-options)
+         (mm/model model-options))
 
-         )
+         
 
         fitted-ctx
         (pipe-fn
@@ -155,8 +155,8 @@
         ;; make a grid for the decision surface
         grid
         (for [x1 (stepped-range min-x max-x 100)
-              x2 (stepped-range min-y max-y 100)
-              ]
+              x2 (stepped-range min-y max-y 100)]
+              
           {(first cols) x1
            (second cols) x2
            :species nil})
@@ -209,15 +209,15 @@
                       :type "quantitative"
                       :scale {:domain [min-x max-x]}
                       :axis {:format "2.2"
-                             :labelOverlap true}
-                      }
+                             :labelOverlap true}}
+                      
                   :y {:field (second cols) :type "quantitative"
                       :axis {:format "2.2"
                              :labelOverlap true}
-                      :scale {:domain [min-y max-y]}
-                      }
-                  :color {:field :predicted-species}
-                  }}
+                      :scale {:domain [min-y max-y]}}
+                      
+                  :color {:field :predicted-species}}}
+                  
 
       {:data {:values (tc/rows ds-prediction :as-maps)}
 
@@ -228,15 +228,15 @@
                       :type "quantitative"
                       :axis {:format "2.2"
                              :labelOverlap true}
-                      :scale {:domain [min-x max-x]}
-                      }
+                      :scale {:domain [min-x max-x]}}
+                      
                   :y {:field (second cols) :type "quantitative"
                       :axis {:format "2.2"
                              :labelOverlap true}
-                      :scale {:domain [min-y max-y]}
-                      }
+                      :scale {:domain [min-y max-y]}}
+                      
 
-                  :fill {:field :true-species ;; :legend nil
-                         }
-                  :stroke { :value :black }
-                  :size {:value 300 }}}]}))
+                  :fill {:field :true-species} ;; :legend nil
+                         
+                  :stroke { :value :black}
+                  :size {:value 300}}}]}))

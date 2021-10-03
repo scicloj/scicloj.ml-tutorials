@@ -486,8 +486,8 @@ from parameters:"]
 
 (defn create-pipe-fn [params]
   (ml/pipeline
-   (mm/select-columns [:Survived :Pclass])
-   (mm/categorical->number [:Survived :Pclass])
+   (mm/select-columns [:Survived :Pclass :Sex])
+   (mm/categorical->number [:Survived :Pclass :Sex])
    (mm/set-inference-target :Survived)
    {:metamorph/id :model} (mm/model (merge {:model-type :smile.classification/logistic-regression}
                                      params))))
@@ -524,20 +524,22 @@ which we can easily transform in a sequence of 20 pipeline functions:"]
                                          train-test-data-pairs
                                          ml/classification-accuracy
                                          :accuracy
-                                         {:return-best-pipeline-only false
+                                         {:map-fn :map
+                                          :result-dissoc-in-seq []
+                                          :return-best-pipeline-only false
                                           :return-best-crossvalidation-only false}))
 
 ["This gives 10 * 20 = 200 model performance results ( 10 folds times 20 pipeline)
  for which I print here the distribution:"]
 (frequencies
- (map :metric
+ (map (comp :metric :train-transform)
       (flatten eval-results)))
 
 ["Sorting the result by metric and taking the last, we can get the `best` performing model"]
 (def best-result
   (->> eval-results
        flatten
-       (sort-by :metric)
+       (sort-by (comp :metric :train-transform))
        last))
 
 
@@ -548,13 +550,11 @@ which we can easily transform in a sequence of 20 pipeline functions:"]
 
 
 
-
-
 ["with a classification accuracy of:"]
-(:metric best-result)
+((comp :metric :train-transform) best-result)
 
 ["and a mean classification accuracy over all folds of:"]
-(:mean best-result)
+((comp :metric :train-transform) best-result)
 
 ["Out of this we can get the trained logistic regression model
 (in this case a Smile Java object), "]
@@ -563,6 +563,7 @@ which we can easily transform in a sequence of 20 pipeline functions:"]
 
 best-logistic-regression-model
 
+;; (ml/explain (get-in best-result [:fit-ctx :model]))
 ["to inspect its internals, like coefficients: "]
 (seq
  (.coefficients best-logistic-regression-model))
@@ -580,85 +581,19 @@ best-logistic-regression-model
 (->
  (best-pipe-fn
   (merge best-fit-ctx
-         {:metamorph/data (-> titanic-data  (ds/shuffle {:seed 123})  (ds/head 10))
+         {:metamorph/data (-> titanic-data  (ds/shuffle {:seed 123})  (ds/head 500))
           :metamorph/mode :transform}))
  :metamorph/data
- (ds/column-values->categorical :Survived))
-
-
-["### Learning curve"]
-
-(def train-val-split
-  (first
-   (ds/split->seq  titanic-data :holdout {:ratio 0.8})))
-
-(def training-curve-splits
-  (map
-   #(hash-map :train (ds/head (:train train-val-split) %)
-              :test (:test train-val-split))
-   (range 200 (ds/row-count (:train train-val-split)) 10)))
-
-
-(map
- #(-> % :train ds/row-count)
- training-curve-splits)
-
-(def training-curve-evaluations
-  (ml/evaluate-pipelines [best-pipe-fn]
-                         training-curve-splits
-                         ml/classification-accuracy
-                         :accuracy
-                         {:return-best-pipeline-only false
-                          :return-best-crossvalidation-only false
-                          :result-dissoc-in-seq []}))
-(def train-counts
-  (->> training-curve-evaluations flatten (map #(-> % :fit-ctx :metamorph/data ds/row-count))))
-
-(count (flatten training-curve-evaluations))
-
-(def metrices
-  (->> training-curve-evaluations flatten (map #(-> % :metric))))
-
-(def train-metrices
-  (->> training-curve-evaluations flatten (map #(-> % :metric-train))))
-
-(def traing-curve-plot-data
-  (reverse
-   (sort-by :metric
-            (flatten
-             (map
-              #(vector (zipmap [:count :metric :type] [%1 %2 :test])
-                       (zipmap [:count :metric :type] [%1 %3 :train]))
-              train-counts
-              metrices
-              train-metrices)))))
-
-
-^kind/vega
-{
- :data {:values traing-curve-plot-data}
-
- :width 500
- :height 500
- :mark {:type "point"}
- :encoding {:x {:field :count :type "quantitative"}
-            :y {:field :metric :type "quantitative"}
-            :color {:field :type}}}
-
-
-
-
-
-
-(->>
- (map
-  #(hash-map :test-metric %1
-             :train-metric %2
-             :better? (if (> %1 %2) :test :train))
-  (->> eval-results flatten (map :metric))
-  (->> eval-results flatten (map :metric-train)))
- (map :better?)
+ (ds/column-values->categorical :Survived)
  frequencies)
+
+
+;; (ds/reverse-map-categorical-xforms)
+
+;; frequencies
+
+
+
 
 
 

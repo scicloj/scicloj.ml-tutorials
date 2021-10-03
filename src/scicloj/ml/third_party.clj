@@ -1,7 +1,6 @@
 (ns scicloj.ml.third-party
  (:require [notespace.api :as note]
            [notespace.kinds :as kind]
-
            [scicloj.ml.ug-utils :refer :all]
            [dk.simongray.datalinguist.ml.crf]
            [clj-djl.mmml]))
@@ -35,34 +34,55 @@
 
 
 ["# xgboost"]
+["## Example code"]
 
-(def train-ds
-  (ds/dataset
-   "http://d2l-data.s3-accelerate.amazonaws.com/kaggle_house_pred_train.csv" {:key-fn csk/->kebab-case-keyword}))
+(def house-price
+  (->
+   (ds/dataset
+    "http://d2l-data.s3-accelerate.amazonaws.com/kaggle_house_pred_train.csv" {:key-fn csk/->kebab-case-keyword})
+   (ds/replace-missing :type/string "NA")
+   (ds/categorical->number  #(ds/select-columns % :type/string))))
+
+
+(def split (first (ds/split->seq house-price :holdout)))
+
+(def train-ds (:train split))
+(def test-ds (:test split))
 
 
 (def pipe-fn
   (ml/pipeline
-   (mm/replace-missing :type/string "NA")
    (mm/replace-missing :type/numerical :value 0)
-   (mm/categorical->number  #(ds/select-columns % :type/string))
    (mm/set-inference-target :sale-price)
    {:metamorph/id :model} (mm/model {:model-type :xgboost/linear-regression})))
 
+(def fit-result
+  (let [fitted-ctx
+        (ml/fit-pipe train-ds pipe-fn)
+        test-predictions
+        (ml/transform-pipe test-ds pipe-fn fitted-ctx)
+        error
+        (ml/mae (-> test-predictions  :metamorph/data :sale-price)
+                (-> test-ds :sale-price))]
+    {:error error
+     :gains (->
+             (ml/explain (-> fitted-ctx :model))
+             (ds/order-by :gain :desc))}))
 
 
-(def fitted-ctx
-  (ml/fit-pipe train-ds pipe-fn))
 
-(def model-instance
-  (-> fitted-ctx :model ml/thaw-model))
+["error:"]
+(:error fit-result)
 
+
+["Feature importance - gain"]
 
 ^kind/dataset
-(ml/explain (-> fitted-ctx :model))
+(:gains fit-result)
 
+["## Reference"]
 
-
+^kind/hiccup-nocode (render-key-info ":xgboost")
 
 ["# Deep learning models via clj-djl "]
 
@@ -92,6 +112,9 @@
                        col-name-seq-or-fn)
                      update-fn))
 
+
+
+
 (require
  '[clj-djl.nn :as nn]
  '[clj-djl.training :as t]
@@ -99,32 +122,51 @@
  '[clj-djl.training.optimizer :as optimizer]
  '[clj-djl.training.tracker :as tracker]
  '[clj-djl.training.listener :as listener]
- '[clj-djl.ndarray :as nd])
+ '[clj-djl.ndarray :as nd]
+ '[clj-djl.nn.parameter :as param])
 
 (def  learning-rate 0.05)
 (defn net [] (nn/sequential {:blocks (nn/linear {:units 1})
-                             :initializer (nn/normal-initializer)}))
+                             :initializer (nn/normal-initializer)
+                             :parameter param/weight}))
+
 (defn cfg [] (t/training-config {:loss (loss/l2-loss)
                                  :optimizer (optimizer/sgd
                                              {:tracker (tracker/fixed learning-rate)})
                                  :evaluator (t/accuracy)
                                  :listeners (listener/logging)}))
 
+(def all-data
+  (->
+   (ds/concat train-ds test-ds)
+   (ds/drop-columns ["Id"])
+   (ds/set-inference-target "SalePrice")
+   (tech.v3.dataset/replace-missing ds/numeric :value 0)
+   (tech.v3.dataset/replace-missing ds/categorical :value "None")
+   (update-columns numeric-features
+                   #(dfn// (dfn/- % (dfn/mean %))
+                           (dfn/standard-deviation %)))
+   (ds/categorical->one-hot ds/categorical)))
+
+(tech.v3.dataset/columns-with-missing-seq all-data)
+
+(def processed-train-ds
+  (ds/head all-data (ds/row-count train-ds)))
+
+(def processed-test-ds
+  (ds/tail all-data (ds/row-count test-ds)))
+
+
+
 (def pipe
   (ml/pipeline
-   (mm/drop-columns ["Id"])
-   (mm/set-inference-target "SalePrice")
-   (tech.v3.dataset.metamorph/replace-missing ds/numeric :value 0)
-   (tech.v3.dataset.metamorph/replace-missing ds/categorical :value "None")
-   (ml/lift update-columns numeric-features
-            #(dfn// (dfn/- % (dfn/mean %))
-                    (dfn/standard-deviation %)))
+
+
    (mm/update-column "SalePrice"
                      #(dfn// % (dfn/mean %)))
+
    (mm/set-inference-target "SalePrice")
-   (mm/categorical->one-hot ds/categorical)
-   (fn [ctx]
-     ((mm/select-rows (:ds-indeces ctx) ) ctx))
+
    (mm/model {:model-type :clj-djl/djl
               :batchsize 64
               :model-spec {:name "mlp" :block-fn net}
@@ -132,25 +174,26 @@
               :initial-shape (nd/shape 1 310)
               :nepoch 1})))
 
-(def trained-pipeline
-  (pipe {:metamorph/data (ds/concat train-ds test-ds)
-         :metamorph/mode :fit
-         :ds-indeces (range (ds/row-count train-ds))}))
-         
 
+
+
+(def trained-pipeline
+  (pipe {:metamorph/data processed-train-ds
+         :metamorph/mode :fit}))
+
+
+         
 (def predicted-pipeline
   (pipe
    (merge trained-pipeline
-          {:metamorph/data (ds/concat test-ds train-ds)
-           :metamorph/mode :transform
-           :ds-indeces (range (ds/row-count test-ds))})))
+          {:metamorph/data processed-test-ds
+           :metamorph/mode :transform})))
 
 
 
 ( get
  (:metamorph/data trained-pipeline)
  "SalePrice")
- 
 
 
 ^kind/hiccup-nocode

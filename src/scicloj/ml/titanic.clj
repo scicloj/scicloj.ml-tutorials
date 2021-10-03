@@ -23,7 +23,8 @@
          '[clojure.string :as str]
          '[fastmath.stats :as stats]
          '[fastmath.random :as rnd]
-         '[fitdistr.core :as fit])
+         '[fitdistr.core :as fit]
+         '[scicloj.ml.xgboost] :reload)
           
 
 
@@ -144,6 +145,13 @@ which is a typical case of feature engineering."]
 
 ["The final pipeline contains the functions we did before."]
 
+
+;; => _unnamed [2 1]:
+;;    | :a |
+;;    |----|
+;;    |    |
+;;    |    |
+
 (def pipeline-fn
   (ml/pipeline
    (mm/replace-missing :embarked :value "S")
@@ -172,6 +180,7 @@ which is a typical case of feature engineering."]
                             :title :age-group :cabin :parch] {} :int64)
 
    (mm/set-inference-target :survived)))
+
 
 ["Transformed data"]
 (->
@@ -253,7 +262,7 @@ which `model` function is in the pipeline"]
        flatten
        (map
         #(hash-map :model (ml/thaw-model (get-in % [:fit-ctx :model]))
-                   :metric (:metric %)
+                   :metric ((comp :metric :test-transform) %)
                    :fit-ctx (:fit-ctx %)))
                    
        (sort-by :mean)
@@ -332,28 +341,52 @@ which cover in a smart way the hyper-parameter space."]
                          :max-depth (ml/linear 1 50 10)
                          :node-size (ml/linear 1 10 10)})
 
-   (take 100)))
+   (take 500)))
   
 
 ["Generate the pipeline-fns we want to evaluate."]
 (def pipeline-fns (map make-pipeline-fn search-grid))
 
+(defn xgboost-pipe [opts]
+  (ml/pipeline
+     pipeline-fn
+     {:metamorph/id :model}
+     (mm/model
+      (merge opts
+             {:model-type :xgboost/classification}))))
+
+(def xgboost-pipes
+  (->>
+   (ml/sobol-gridsearch
+    (ml/hyperparameters :xgboost/classification))
+   (take 500)
+   (map xgboost-pipe)))
+
+
+;; (ml/fit-pipe (:train (first train-val-splits)) xgboost-pipe)
 
 ["Evaluate all  pipelines and keep results"]
 (def evaluations
 
   (ml/evaluate-pipelines
-   pipeline-fns
+   (take 10
+         (concat xgboost-pipes xgboost-pipes))
    train-val-splits
    ml/classification-accuracy
    :accuracy
    {:return-best-pipeline-only false
     :return-best-crossvalidation-only false
+    ;; :evaluation-handler-fn (fn [m]
+    ;;                          (println (:metric m)))
+
 
     :map-fn :map
     :result-dissoc-seq []}))
     
-   
+
+
+
+
 
 ["Get the key information from the evaluations and sort by the metric function used,
  accuracy here."]
@@ -363,15 +396,16 @@ which cover in a smart way the hyper-parameter space."]
        flatten
        (map
         #(assoc
-          (select-keys % [:mean :metric :fit-ctx])
+          (select-keys % [:test-transform :fit-ctx :pipe-fn])
+
           :model (ml/thaw-model (get-in % [:fit-ctx :model]))))
-       (sort-by :metric)
+       (sort-by (comp :metric :test-transform))
        reverse))
 
 
 
 
-["As we did 10 pipelines and 10 fold cross validation, we have 100 models ttrained in total "]
+["As we did several pipelines and several x-fold cross validation, we have quite some models trained in total "]
 (count models)
 
 ["As we sorted by mean accuracy, the first evaluation result is the best model,"]
@@ -380,16 +414,17 @@ which cover in a smart way the hyper-parameter space."]
 ["which is: "]
 (:model best-model)
 
-["with a mean accuracy of "  (:mean best-model)]
-["and a accuracy of "  (:metric best-model)]
+["with a mean accuracy of "  (-> best-model :test-transform :mean)]
+["and a accuracy of "  (-> best-model :test-transform :metric)]
 
-(println "mean acc: " (:mean best-model))
-(println "acc: " (:metric best-model))
+
+(println "mean acc: " (-> best-model :test-transform :mean))
+(println "acc: " (-> best-model :test-transform :metric))
 
 
 ["using options: "]
 (-> best-model :fit-ctx :model :options)
-
+(clojure.pprint/pprint (-> best-model :fit-ctx :model :options))
 
 (def test-data (ds/dataset "data/titanic/test.csv"
                            {:key-fn csk/->kebab-case-keyword}))
@@ -417,7 +452,7 @@ prediction-ds
 
 
 
-["Create Subimssion file to Kaggle"]
+["# Create Subimssion file to Kaggle"]
 
 (def submission-ds
   (-> prediction-ds
@@ -426,3 +461,83 @@ prediction-ds
                           :survived "Survived"})))
 
 (ds/write-csv! submission-ds "submission.csv")
+
+
+["### Learning curve"]
+
+
+
+(def training-curve-splits
+  (map
+   #(hash-map :train (ds/head (:train-val ds-split) %)
+              :test (:test ds-split))
+   (range 5 (ds/row-count (:train-val ds-split)) 10)))
+
+
+
+(def training-curve-evaluations
+  (ml/evaluate-pipelines [(:pipe-fn (first models))]
+                         training-curve-splits
+                         ml/classification-accuracy
+                         :accuracy
+                         {:map-fn :map
+                          :return-best-pipeline-only false
+                          :return-best-crossvalidation-only false
+                          :result-dissoc-in-seq []}))
+(def train-counts
+  (->> training-curve-evaluations flatten (map #(-> % :fit-ctx :metamorph/data ds/row-count))))
+
+
+
+(def test-metrices
+  (->> training-curve-evaluations flatten (map #(-> % :test-transform :metric))))
+
+(def train-metrices
+  (->> training-curve-evaluations flatten (map #(-> % :train-transform :metric))))
+
+(def traing-curve-plot-data
+  (reverse
+   (sort-by :metric
+            (flatten
+             (map
+              #(vector (zipmap [:count :metric :type] [%1 %2 :test])
+                       (zipmap [:count :metric :type] [%1 %3 :train]))
+              train-counts
+              test-metrices
+              train-metrices)))))
+
+
+^kind/vega
+{
+ :data {:values traing-curve-plot-data}
+
+ :width 500
+ :height 500
+ :mark {:type "line"}
+ :encoding {:x {:field :count :type "quantitative"}
+            :y {:field :metric :type "quantitative"}
+            :color {:field :type}}}
+
+
+
+
+
+(comment
+  (->>
+   (map
+    #(hash-map :test-metric %1
+               :train-metric %2
+               :better? (if (> %1 %2) :test :train))
+    (->> training-curve-evaluations flatten (map :metric))
+    (->> training-curve-evaluations flatten (map #(get-in % [:train-prediction :metric]))))
+   (map :better?)
+   frequencies)
+
+  (println
+   (-> (ds/dataset {:x ["A" "B" "C" "D" "E" "F"] :y (range)})
+       (ds/categorical->one-hot [:x] {} :int)
+       (ds/set-inference-target :y)
+       (scicloj.metamorph.ml/train {:model-type :smile.regression/ordinary-least-square})
+       ml/thaw-model))
+
+  )
