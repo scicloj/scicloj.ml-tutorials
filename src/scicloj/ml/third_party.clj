@@ -74,7 +74,6 @@
 ["error:"]
 (:error fit-result)
 
-
 ["Feature importance - gain"]
 
 ^kind/dataset

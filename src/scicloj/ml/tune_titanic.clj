@@ -109,12 +109,8 @@
 
 (def best-accuracy (-> best-evaluation first first :train-transform :metric))
 
-["best accuracy found on train data: " best-accuracy]
 
 (def best-options (-> best-evaluation first first :fit-ctx :pipe-options))
-["best options found on train data: "]
-
-best-options
 
 (def best-pipe-fn
   (-> best-evaluation first first :pipe-fn))
@@ -124,8 +120,6 @@ best-pipe-fn
 (def best-pipe-decl
   (-> best-evaluation first first :pipe-decl))
 
-["best pipe"]
-best-pipe-decl
 
 (def source-refs
   (:fn-sources
@@ -134,24 +128,39 @@ best-pipe-decl
     *ns*
     (-> #'data meta :file))))
 
+
+(def pipeline-code
+  (->>
+   source-refs
+   (filter #(let [v (val %)
+                  code-source (:code-source v)
+                  code-source-local (:code-local-source v)]
+              (or code-source code-source-local)))
+   (map (fn [[k v]]
+          (def k k)
+          (def v v)
+          {k
+           (str (:code-source v) (:code-local-source v))}))))
+
+(defn pp-str [x]
+  (with-out-str (clojure.pprint/pprint x)))
+
+
+["## All information on best found pipeline"]
+
+["best accuracy found on train data: " (-> best-evaluation first first :train-transform :metric)]
+["best accuracy found on test data: " (-> best-evaluation first first :test-transform :metric)]
+
+["best options (found on train data): "]
+best-options
+
+["best pipeline (found on train data)"]
+best-pipe-decl
+
 ["pipe sources"]
+(apply merge
+ pipeline-code)
 
-(->>
- source-refs
- (filter #(let [v (val %)
-                code-source (:code-source v)
-                code-source-local (:code-local-source v)]
-            (or code-source code-source-local)))
- (map (fn [[k v]]
-        (def k k)
-        (def v v)
-        {k
-         (str (:code-source v) (:code-local-source v))})))
-
-
-
-
- 
 
 
 (def predicted-survival-hold-out
