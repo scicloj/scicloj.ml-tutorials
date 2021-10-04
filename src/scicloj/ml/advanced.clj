@@ -502,7 +502,7 @@ potential values using sobol sequences"]
 
 (def all-options
   (->>
-   (ml/sobol-gridsearch {:max-iterations (ml/linear 1 1000)
+   (ml/sobol-gridsearch {:max-iterations (ml/linear 1 1000 100 :int)
                          :lambda (ml/linear 0 1)
                           :tolerance (ml/linear 1e-9 1e-1 20)})
    (take 20)))

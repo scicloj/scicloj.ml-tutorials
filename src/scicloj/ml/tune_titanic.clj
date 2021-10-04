@@ -56,7 +56,6 @@
 
 
 (defn make-decl-pipeline[model-type options]
-  (def options options)
   [[::assoc-pipe-opts options]
    [::replace-missing options]
    [:mm/categorical->number [:survived ] {} :int64]
@@ -64,7 +63,8 @@
    [:mm/set-inference-target :survived]
    {:metamorph/id :model} [:mm/model (merge (:model-options options) {:model-type model-type})]])
 
-(ml/->pipeline [[::replace-misssing options]])
+
+
 
 (def logistic-regression-pipelines
   (map
@@ -80,7 +80,7 @@
    (ml/sobol-gridsearch {:scaling-options {:scale? (ml/categorical [true false])}
                          :replace-missing-options {:value (ml/categorical [dtfunc/mean dtfunc/median])}
                          :model-options {:trees (ml/categorical [5 50 100 250])
-                                         :max_depth (ml/categorical [5 8 10])}})))
+                                         :max-depth (ml/categorical [5 8 10])}})))
 
 (def all-pipelines (concat random-forrest-pipelines))
 
@@ -103,7 +103,7 @@
    (ds/split->seq train-ds :kfold 5)
    ml/classification-accuracy
    :accuracy
-   {;; :evaluation-handler-fn (eval-hn/nippy-handler files "/tmp/titanic" "/home/carsten/Dropbox/sources/")
+   {
     :return-best-crossvalidation-only true
     :return-best-pipeline-only true}))
 
@@ -125,7 +125,8 @@ best-pipe-fn
   (:fn-sources
    (scicloj.metamorph.ml.evaluation-handler/get-source-information
     [best-pipe-decl]
-    *ns*
+    (find-ns 'scicloj.ml.tune-titanic)
+
     (-> #'data meta :file))))
 
 
@@ -137,10 +138,16 @@ best-pipe-fn
                   code-source-local (:code-local-source v)]
               (or code-source code-source-local)))
    (map (fn [[k v]]
-          (def k k)
-          (def v v)
           {k
-           (str (:code-source v) (:code-local-source v))}))))
+           (let [str-code
+                 (str (:code-source v) (:code-local-source v))]
+             (if-not (clojure.string/blank? str-code)
+               (read-string str-code)
+               ""))}))))
+
+
+
+
 
 (defn pp-str [x]
   (with-out-str (clojure.pprint/pprint x)))
@@ -158,8 +165,9 @@ best-options
 best-pipe-decl
 
 ["pipe sources"]
-(apply merge
- pipeline-code)
+
+
+pipeline-code
 
 
 
