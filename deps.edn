@@ -1,6 +1,6 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.3"}
-        scicloj/scicloj.ml {:mvn/version "0.1.0-beta8"}
+        scicloj/scicloj.ml {:mvn/version "0.1.0-beta9-SNAPSHOT"}
         scicloj/scicloj.ml.smile {:mvn/version "5.08-SNAPSHOT"}
         scicloj/metamorph.ml {:mvn/version "0.3.1-beta1-SNAPSHOT"}
         clj-djl/clj-djl {:mvn/version "0.1.6" :exclusions [org.slf4j/slf4j-simple]}
