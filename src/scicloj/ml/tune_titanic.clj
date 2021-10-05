@@ -37,14 +37,10 @@
 
 (defn replace-missing [options]
   (fn [ctx]
-    (def ctx ctx)
-    (def options options)
     ( (apply mm/replace-missing numeric-features (map->vec (:replace-missing-options options))) ctx)))
 
 (defn maybe-std-scale [options]
   (fn [ctx]
-    (def ctx ctx)
-    (def options options)
     (if (-> options :scaling-options :scale?)
       ((mm/std-scale numeric-features {})
        ctx)
