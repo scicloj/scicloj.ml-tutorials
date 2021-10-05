@@ -103,7 +103,8 @@
    (ds/split->seq train-ds :kfold 5)
    ml/classification-accuracy
    :accuracy
-   {
+   {;; :attach-fn-sources {:ns (find-ns 'scicloj.ml.tune-titanic)
+    ;;                         :pipe-fns-clj-file "src/scicloj/ml/tune_titanic.clj"}
     :return-best-crossvalidation-only true
     :return-best-pipeline-only true}))
 
@@ -121,36 +122,8 @@ best-pipe-fn
   (-> best-evaluation first first :pipe-decl))
 
 
-(def source-refs
-  (:fn-sources
-   (scicloj.metamorph.ml.evaluation-handler/get-source-information
-    [best-pipe-decl]
-    (find-ns 'scicloj.ml.tune-titanic)
-
-    (-> #'data meta :file))))
 
 
-(def pipeline-code
-  (->>
-   source-refs
-   (filter #(let [v (val %)
-                  code-source (:code-source v)
-                  code-source-local (:code-local-source v)]
-              (or code-source code-source-local)))
-   (map (fn [[k v]]
-          {k
-           (let [str-code
-                 (str (:code-source v) (:code-local-source v))]
-             (if-not (clojure.string/blank? str-code)
-               (read-string str-code)
-               ""))}))))
-
-
-
-
-
-(defn pp-str [x]
-  (with-out-str (clojure.pprint/pprint x)))
 
 
 ["## All information on best found pipeline"]
@@ -164,10 +137,14 @@ best-options
 ["best pipeline (found on train data)"]
 best-pipe-decl
 
-["pipe sources"]
+["pipe sources information"]
+(->
+ (ml/get-nice-source-info best-pipe-decl
+                          (find-ns 'scicloj.ml.tune-titanic)
+                          (-> #'data meta :file))
+ (update :classpath #(take 20 %)))
 
 
-pipeline-code
 
 
 
@@ -209,45 +186,40 @@ pipeline-code
 
 ["## nested cross validation"]
 
-(comment
-
-  (require '[scicloj.ml.nested-cv :as nested-cv])
 
 
-  (def nested-cv-result
-    (doall
-     (nested-cv/nested-cv data all-pipelines
-                          ml/classification-accuracy
-                          :accuracy 10 5)))
+(require '[scicloj.ml.nested-cv :as nested-cv])
+
+
+(def nested-cv-result
+ (doall
+  (nested-cv/nested-cv data all-pipelines
+                       ml/classification-accuracy
+                       :accuracy 10 5)))
 
 
 
-  ["nested cv best models metrics"]
-  (map :metric nested-cv-result)
+["nested cv best models metrics"]
+(map :metric nested-cv-result)
 
-  (def final-model-by-cv
-    (let [inner-k-fold (ds/split->seq data :kfold {:k 5})
-          evaluation (ml/evaluate-pipelines
-                      all-pipelines
-                      inner-k-fold
-                      ml/classification-accuracy
-                      :accuracy)
-          fit-ctx (-> evaluation first first :fit-ctx)
-          best-pipefn (-> evaluation first first :pipe-fn)]
-      {:best-pipe-fn best-pipefn
-       :fit-ctx fit-ctx}))
+(def final-model-by-cv
+ (let [inner-k-fold (ds/split->seq data :kfold {:k 5})
+       evaluation (ml/evaluate-pipelines
+                   all-pipelines
+                   inner-k-fold
+                   ml/classification-accuracy
+                   :accuracy)
+       fit-ctx (-> evaluation first first :fit-ctx)
+       best-pipefn (-> evaluation first first :pipe-fn)]
+   {:best-pipe-fn best-pipefn
+    :fit-ctx fit-ctx}))
 
-  (def final-model
-    ((:best-pipe-fn final-model-by-cv) {:metamorph/data data :metamorph/mode :fit}))
+(def final-model
+  ((:best-pipe-fn final-model-by-cv
+    {:metamorph/data data :metamorph/mode :fit})))
 
-  ["Final best model"]
-  (-> final-model
-      (assoc-in [ :fit-ctx :model :model-data] nil)
-      (assoc-in [:metamorph/data ] nil)
-      (assoc-in [:model :model-data] nil))
+["Final best model"]
+(ml/thaw-model (:model  final-model))
 
-  (def repeated
-    (ds/split->seq data :kfold {:k 5 :repeats 5}))
-
-  (-> (nth repeated 5) :train :age seq (#(take 5 %)))
-  (-> (nth repeated 10) :train :age seq (#(take 5 %))))
+["trained with best hyper paramter"]
+(-> final-model :pipe-options)
