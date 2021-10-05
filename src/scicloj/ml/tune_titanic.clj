@@ -215,8 +215,8 @@ best-pipe-decl
     :fit-ctx fit-ctx}))
 
 (def final-model
-  ((:best-pipe-fn final-model-by-cv
-    {:metamorph/data data :metamorph/mode :fit})))
+  ((:best-pipe-fn final-model-by-cv)
+   {:metamorph/data data :metamorph/mode :fit}))
 
 ["Final best model"]
 (ml/thaw-model (:model  final-model))
