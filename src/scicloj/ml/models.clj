@@ -282,7 +282,7 @@ regulates the different variables dependent of lambda."]
    (mm/convert-types :disease-progression :float32)
    (mm/set-inference-target :disease-progression)
    {:metamorph/id :model} (mm/model {:model-type :smile.regression/lasso
-                                     :lambda lambda})))
+                                     :lambda (double lambda)})))
 
 ["No we go over a sequence of lambdas and fit a pipeline for all off them
 and store the coefficients for each predictor variable:"]
@@ -355,7 +355,6 @@ a float value, as needed by the model."]
 (def pipe-fn
   (ml/pipeline
    (mm/select-columns [:bmi :disease-progression])
-   (mm/update-column :disease-progression (fn [col] (map #(double %) col)))
    (mm/convert-types :disease-progression :float32)
    (mm/set-inference-target :disease-progression)
    {:metamorph/id :model} (mm/model {:model-type :smile.regression/ordinary-least-square})))
@@ -363,9 +362,7 @@ a float value, as needed by the model."]
 ["We can then fit the model, by running the pipeline in mode :fit"]
 
 (def fitted
-  (ml/fit
-   diabetes-train
-   pipe-fn))
+  (ml/fit diabetes-train pipe-fn))
 
 
 ["Next we run the pipe-fn in :transform and extract the prediction
@@ -387,9 +384,7 @@ for the disease progression:"]
 ["The smile Java object of the LinearModel is in the pipeline as well:"]
 
 (def model-instance
-  (-> fitted
-      :model
-      (ml/thaw-model)))
+  (-> fitted :model  (ml/thaw-model)))
 
 ["This object contains all information regarding the model fit
 such as coefficients and formula:"]
