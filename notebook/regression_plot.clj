@@ -16,6 +16,7 @@
 
 (def regression-points-chart
   (hc/xform ht/point-chart
+            :TITLE :TITLE
             :DATA :VALDATA
             :X :X :Y :Y
             :MCOLOR :black
@@ -25,6 +26,7 @@
 
 (def regression-chart
   (hc/xform ht/layer-chart
+            :TITLE :TITLE
             :HEIGHT 400 :WIDTH 450
             :X :REGRESSION-X
             :Y :REGRESSION-Y
@@ -36,11 +38,32 @@
 
 
              (hc/xform regression-line-chart
-                        :DATA :REGRESSION-LINE-DATA
-                        :X :REGRESSION-X
-                        :Y :REGRESSION-Y)]))
+                       :DATA :REGRESSION-LINE-DATA
+                       :X :REGRESSION-X
+                       :Y :REGRESSION-Y)]))
 
 
 
             ;; :X :X
             ;; :Y :Y
+
+(def residual-plot-chart
+  (hc/xform ht/layer-chart
+            :HEIGHT 400 :WIDTH 450
+
+            :LAYER
+            [(hc/xform (assoc ht/view-base
+                              :mark (merge ht/mark-base {:type "rule"}))
+
+                       :DATA :DATA-RESIDUALS
+                       :ENCODING {:x {:field :X-REGRESSION :type :quantitative :scale {:zero false}}
+                                  :x2 {:field :X-REGRESSION  :type :quantitative}
+                                  :y {:field :Y-REGRESSION  :type :quantitative :scale {:zero false}}
+                                  :y2 {:field :RESIDUAL+PREDICTION  :type :quantitative}})
+             (hc/xform regression-line-chart
+                     :X :X-REGRESSION :Y :Y-REGRESSION
+                     :DATA :DATA-REGRESSION-LINE)
+             (hc/xform ht/point-chart
+                       :DATA :DATA-RESIDUALS
+                     :X :X-REGRESSION :Y :Y-REGRESSION
+                     :MCOLOR :black)]))

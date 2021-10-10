@@ -70,16 +70,15 @@
 
 (def line-data (ds/dataset {:dan-sleep (range 4 9 0.1)}))
 
-(def predictions-ds
+(def regression-line-ds
   (-> line-data
-      (ml/predict  lm)
-      (ds/append line-data)))
+      (ds/add-column :dan-grump (fn [ds] (:dan-grump (ml/predict ds lm))))))
 
 
-(def predictions
-  (-> predictions-ds
-      (ds/rows :as-maps)
-      seq))
+
+
+
+
       
 
 
@@ -103,7 +102,7 @@
 
 ^kinds/vega
 (hc/xform reg-plot/regression-points-chart
-
+         :TITLE "Linear regression"
          :VALDATA (seq (ds/rows data :as-maps))
          :X :dan-sleep :Y :dan-grump
          :MCOLOR :black
@@ -120,7 +119,7 @@
            :REGRESSION-X :dan-sleep
            :REGRESSION-Y :dan-grump
            :REGRESSION-POINT-DATA (seq (ds/rows data :as-maps))
-           :REGRESSION-LINE-DATA predictions)
+           :REGRESSION-LINE-DATA (ds/rows regression-line-ds :as-maps))
 
 
 
@@ -139,7 +138,6 @@
           :TITLE "Not the best fitting regression line"
           :REGRESSION-X :dan-sleep
            :REGRESSION-Y :dan-grump
-
           :REGRESSION-POINT-DATA (seq (ds/rows data :as-maps))
           :REGRESSION-LINE-DATA bad-line-data)
 ;; Figure 15.3: In contrast, this plot shows the same data, but with a very poor choice of regression line drawn over the top.
@@ -251,63 +249,36 @@
 ;;
 ;; ## 15.2 Estimating a linear regression model
 
-^kinds/vega
-(hc/xform reg-plot/regression-chart
-          :TITLE "The best fitting regression line "
-          :REGRESSION-X :dan-sleep
-          :REGRESSION-Y :dan-grump
-          :REGRESSION-POINT-DATA (seq (ds/rows data :as-maps))
-          :REGRESSION-LINE-DATA predictions)
-
-
-
 
 
 (def residuals
-  (-> predictions-ds
+  (-> data
       (ds/add-column :residual
-       (seq
-        (.residuals
-         (ml/thaw-model lm))))
-      (ds/add-column :pred+resid
-                     (fn [ds] (func/+ (:residual ds) (:dan-grump ds))))))
+                     (seq
+                      (.residuals
+                       (ml/thaw-model lm))))
+      ;; (ds/add-column :dan-grump-predicted (fn [ds] (:dan-grump (ml/predict ds lm))))
+      (ds/add-column :prediction
+                     (fn [ds] (func/- (:dan-grump ds) (:residual ds))))))
+
 
 ^kinds/vega
 (hc/xform ht/point-chart
-         :DATA (-> residuals (ds/rows :as-maps) seq)
-         :X :dan-sleep :Y :pred+resid
-         :MCOLOR :black
-         :XTITLE "My sleep (hours)"
-         :YTITLE "Residual"
-         :XSCALE {"zero" false}
-         :YSCALE {"zero" false})
+          :TITLE "Residuals"
+          :DATA (-> residuals (ds/rows :as-maps) seq)
+          :X :dan-sleep :Y :pred+resid
+          :MCOLOR :black
+          :XTITLE "My sleep (hours)"
+          :YTITLE "Residual"
+          :XSCALE {"zero" false}
+          :YSCALE {"zero" false})
+
+
 
 ^kinds/vega
-(hc/xform (assoc ht/view-base
-                 :mark (merge ht/mark-base {:type "rule"}))
-
-         :DATA (seq (ds/rows residuals :as-maps))
-         :ENCODING {:x {:field :dan-sleep :type :quantitative :scale {:zero false}}
-                    :x2 {:field :dan-sleep  :type :quantitative}
-                    :y  {:field :dan-grump  :type :quantitative :scale {:zero false}}
-                    :y2 {:field :pred+resid  :type :quantitative}})
-
-^kinds/vega
-(hc/xform ht/layer-chart
-         :HEIGHT 400 :WIDTH 450
-         :LAYER
-         [(hc/xform (assoc ht/view-base
-                           :mark (merge ht/mark-base {:type "rule"}))
-
-                    :DATA (seq (ds/rows residuals :as-maps))
-                    :ENCODING {:x {:field :dan-sleep :type :quantitative :scale {:zero false}}
-                               :x2 {:field :dan-sleep  :type :quantitative}
-                               :y {:field :dan-grump  :type :quantitative :scale {:zero false}}
-                               :y2 {:field :pred+resid  :type :quantitative}})
-          (hc/xform reg-plot/regression-line-chart
-                    :X :dan-sleep :Y :dan-grump
-                    :DATA predictions)
-          (hc/xform ht/point-chart
-                    :DATA (-> residuals (ds/rows :as-maps) seq)
-                    :X :dan-sleep :Y :pred+resid
-                    :MCOLOR :black)])
+(hc/xform reg-plot/residual-plot-chart
+          :DATA-RESIDUALS (-> residuals (ds/rows :as-maps))
+          :DATA-REGRESSION-LINE (->  regression-line-ds (ds/rows :as-maps))
+          :X-REGRESSION :dan-sleep
+          :Y-REGRESSION :dan-grump
+          :RESIDUAL+PREDICTION :prediction)
