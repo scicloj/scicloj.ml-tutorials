@@ -67,3 +67,48 @@
                        :DATA :DATA-RESIDUALS
                      :X :X-REGRESSION :Y :Y-REGRESSION
                      :MCOLOR :black)]))
+
+
+(def residual-plot-chart-2
+  (hc/xform ht/layer-chart
+            :HEIGHT 400 :WIDTH 450
+
+            :LAYER
+            [(hc/xform (assoc ht/view-base
+                              :mark (merge ht/mark-base {:type "rule"}))
+
+                       :DATA :DATA-RESIDUALS
+                       :ENCODING {:x {:field :X-REGRESSION :type :quantitative :scale {:zero false}}
+                                  :x2 {:field :X-REGRESSION  :type :quantitative}
+                                  :y {:field :Y-REGRESSION  :type :quantitative :scale {:zero false}}
+                                  :y2 {:field :RESIDUAL+PREDICTION  :type :quantitative}})
+             (hc/xform ht/line-chart
+                     :X :X-REGRESSION :Y :Y-REGRESSION
+                     :DATA :DATA-REGRESSION-LINE)
+             (hc/xform ht/point-chart
+                       :DATA :DATA-RESIDUALS
+                     :X :X-REGRESSION :Y :Y-REGRESSION
+                     :MCOLOR :black)]))
+
+
+(def residual-plot-chart-3
+  (hc/xform ht/layer-chart
+            :LAYER [(assoc ht/view-base
+                           :mark (merge ht/mark-base {:type "rule" :color "green"})
+                           :data {:values :DATA-RESIDUALS}
+                           :encoding
+                           (merge ht/encoding-base {:x {:field :X-REGRESSION :type :quantitative :scale {:zero false}}
+                                                    :x2 {:field :X-REGRESSION  :type :quantitative}
+                                                    :y {:field :Y-REGRESSION  :type :quantitative :scale {:zero false}}
+                                                    :y2 {:field :RESIDUAL+PREDICTION  :type :quantitative}}))
+                    (hc/xform ht/point-chart
+                              :DATA :DATA-RESIDUALS
+                              :X :X-REGRESSION
+                              :Y :Y-REGRESSION)
+
+                    
+                    (hc/xform
+                     (assoc  ht/line-layer
+                             :data {:values :DATA-REGRESSION-LINE})
+                     :X :X-REGRESSION
+                     :Y :Y-REGRESSION)]))

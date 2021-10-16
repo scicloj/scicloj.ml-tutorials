@@ -282,3 +282,22 @@
           :X-REGRESSION :dan-sleep
           :Y-REGRESSION :dan-grump
           :RESIDUAL+PREDICTION :prediction)
+          
+
+^kinds/vega
+(hc/xform reg-plot/residual-plot-chart-2
+          :DATA-RESIDUALS (-> residuals (ds/rows :as-maps))
+          :DATA-REGRESSION-LINE (->  regression-line-ds (ds/rows :as-maps))
+          :X-REGRESSION :dan-sleep
+          :Y-REGRESSION :dan-grump
+          :RESIDUAL+PREDICTION :prediction)
+
+
+^kinds/vega
+(hc/xform reg-plot/residual-plot-chart-3
+          :DATA-RESIDUALS (-> residuals (ds/rows :as-maps))
+          :DATA-REGRESSION-LINE (->  regression-line-ds (ds/rows :as-maps))
+          :X-REGRESSION :dan-sleep
+          :Y-REGRESSION :dan-grump
+          :MCOLOR (fn [submap] (println submap))
+          :RESIDUAL+PREDICTION :prediction)
