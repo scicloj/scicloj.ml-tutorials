@@ -538,6 +538,6 @@ prediction-ds
        (ds/categorical->one-hot [:x] {} :int)
        (ds/set-inference-target :y)
        (scicloj.metamorph.ml/train {:model-type :smile.regression/ordinary-least-square})
-       ml/thaw-model))
+       ml/thaw-model)))
 
-  )
+  

@@ -21,10 +21,11 @@
         clj-python/libpython-clj {:mvn/version "2.000"}
         generateme/fastmath {:mvn/version "2.1.6"}
         uncomplicate/neanderthal {:mvn/version "0.43.0"}
-        io.github.nextjournal/clerk {:mvn/version "0.1.174"}
-        aerial.hanami/aerial.hanami {:mvn/version "0.12.9"}
-        appliedsciencestudio/rdata {:git/url "https://github.com/appliedsciencestudio/rdata/"
-                                    :sha "151e6dead06b38995f1f30b09d954a060f7a2a9c"}}
+        ;; io.github.nextjournal/clerk {:mvn/version "0.1.174"}
+        aerial.hanami/aerial.hanami {:mvn/version "0.12.9"}}
+        ;; appliedsciencestudio/rdata {:git/url "https://github.com/appliedsciencestudio/rdata/"
+        ;;                             :sha "151e6dead06b38995f1f30b09d954a060f7a2a9c"}
+
         
 
         
