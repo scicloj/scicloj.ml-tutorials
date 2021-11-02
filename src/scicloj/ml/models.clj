@@ -9,7 +9,7 @@
    [clojure.string :as str]
    [scicloj.ml.ug-utils :refer :all]
    [clojure.java.io :as io]))
-  ;; (:import [smile.data Movie])
+
 
   
 
@@ -21,10 +21,12 @@
 
 ["# Models"]
 
-["scicloj.ml uses the plugin `scicloj.ml.smiles` and
+["scicloj.ml uses the plugin `scicloj.ml.smile` and
 `scicloj.ml.xgboost` by default,
-which gives access to a lot of model from the java libraries [Smile](https://haifengl.github.io/)
+which gives access to " (count  (ml/model-definition-names)) " models from the java libraries [Smile](https://haifengl.github.io/)
 and [Xgboost](https://xgboost.readthedocs.io/en/latest/jvm/index.html)"]
+
+["More models are avilable via other plugins."]
 
 ["Below is a list of all such models, and which parameter they take."]
 
@@ -50,7 +52,10 @@ and [Xgboost](https://xgboost.readthedocs.io/en/latest/jvm/index.html)"]
 
 ["The documentation below points as well to the javadoc and user-guide chapter (for Smile models)"]
 
-
+["The full list of build in models is:"]
+(->
+ (ml/model-definition-names)
+ sort)
 
 ["## Smile classification models"]
 ^kind/hiccup-nocode (render-key-info ":smile.classification/ada-boost")
@@ -269,7 +274,7 @@ decision surface for a given pair of column names."]
 ["## Smile regression"]
 
 ^kind/hiccup-nocode (render-key-info ":smile.regression/elastic-net")
- ^kind/hiccup-nocode (render-key-info ":smile.regression/gradient-tree-boost")
+^kind/hiccup-nocode (render-key-info ":smile.regression/gradient-tree-boost")
 ^kind/hiccup-nocode (render-key-info ":smile.regression/lasso")
 
 ["We use the diabetes dataset and will show how Lasso regression
@@ -438,6 +443,18 @@ and observe the linear nature of the model."]
 ["## Xgboost"]
 ^kind/hiccup-nocode
 (render-key-info ":xgboost")
+
+["## fastmath.cluster"]
+^kind/hiccup-nocode
+(render-key-info :fastmath.cluster)
+
+["## smile.projections"]
+^kind/hiccup-nocode
+(render-key-info :smile.projections)
+
+["## smile.manifold"]
+^kind/hiccup-nocode
+(render-key-info :smile.manifold)
 
 ["# Compare decision surfaces of models"]
 

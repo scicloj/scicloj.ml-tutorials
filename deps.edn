@@ -8,6 +8,8 @@
 
         org.clojure/clojure {:mvn/version "1.10.3"}
         scicloj/scicloj.ml {:mvn/version "0.1.1"}
+        scicloj/scicloj.ml.smile {:git/url "https://github.com/scicloj/scicloj.ml.smile.git"
+                                  :git/sha "635a586807ecba97cfb6ccdf194552f38e3d02e0"}
         clj-djl/clj-djl {:mvn/version "0.1.6" :exclusions [org.slf4j/slf4j-simple]}
         ch.qos.logback/logback-classic {:mvn/version "1.3.0-alpha10"}
         scicloj/notespace {:mvn/version "3-beta9"}
@@ -25,8 +27,8 @@
         aerial.hanami/aerial.hanami {:mvn/version "0.12.9"}
         net.clojars.behrica/cluster_eval {:git/url "https://github.com/behrica/cluster-eval.git"
                                           :sha "37cd1fbb704eb32291535add9d8c2543374afa68"}
-         appliedsciencestudio/rdata {:git/url "https://github.com/appliedsciencestudio/rdata/"
-                                     :sha "151e6dead06b38995f1f30b09d954a060f7a2a9c"}}
+        appliedsciencestudio/rdata {:git/url "https://github.com/appliedsciencestudio/rdata/"
+                                    :sha "151e6dead06b38995f1f30b09d954a060f7a2a9c"}}
 
         
 
