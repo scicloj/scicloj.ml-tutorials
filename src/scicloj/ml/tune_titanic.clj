@@ -194,7 +194,6 @@ best-pipe-decl
                        :accuracy 10 5)))
 
 
-
 ["nested cv best models metrics"]
 (map :metric nested-cv-result)
 

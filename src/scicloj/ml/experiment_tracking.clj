@@ -89,46 +89,16 @@ which prints the current declartive pipeline."]
 "]
 
 
-
-
-
-(def  evaluation-result
-  (ml/evaluate-pipelines
-   pipes split
-   ml/classification-accuracy
-   :accuracy
-   {:result-dissoc-in-seq (filter
-                           #(not (= [:pipe-decl] %))
-                           ml/result-dissoc-in-seq--all)
-
-    :return-best-crossvalidation-only false
-    :return-best-pipeline-only false
-    :attach-fn-sources {:ns (find-ns 'scicloj.ml.experiment-tracking)
-                        :pipe-fns-clj-file "src/scicloj/ml/experiment_tracking.clj"}}))
-
-
-["Pipe decl"]
-(-> evaluation-result flatten first :pipe-decl)
-
-["Source information"]
-(-> evaluation-result flatten first :source-information :fn-sources)
-
-["Begining of classpath"]
-(->> evaluation-result flatten first :source-information :classpath (take 10))
-
-
-
 ["Write results to disk"]
 
-(def created-files (atom []))
-(def results (atom []))
+
+
 (def  evaluation-result
   (ml/evaluate-pipelines
    pipes split
    ml/classification-accuracy
    :accuracy
    {:evaluation-handler-fn
-     ;; (fn [result] (swap! results #(conj % result)))
     (scicloj.metamorph.ml.evaluation-handler/example-nippy-handler created-files "/tmp" [[:fit-ctx :model :model-data]
                                                                                          [:train-transform :ctx :model :model-data]
                                                                                          [:test-transform :ctx :model :model-data]])
@@ -136,40 +106,4 @@ which prints the current declartive pipeline."]
     :attach-fn-sources {:ns (find-ns 'scicloj.ml.experiment-tracking)
                         :pipe-fns-clj-file "src/scicloj/ml/experiment_tracking.clj"}}))
 
-
-(->
- (nippy/thaw-from-file (last @created-files))
- (update-in [:source-information :classpath] #(take 10 %)))
-
-
-(comment
-
-
-  (def  evaluation-result
-    (ml/evaluate-pipelines
-     pipes split
-     ml/classification-accuracy
-     :accuracy
-     {:result-dissoc-in-seq []
-      :return-best-crossvalidation-only false
-      :return-best-pipeline-only false
-      :attach-fn-sources {:ns (find-ns 'scicloj.ml.experiment-tracking)
-                          :pipe-fns-clj-file "src/scicloj/ml/experiment_tracking.clj"}}))
-
-  (require '[malli.core :as m])
-  (require '[malli.error :as me])
-
-
-  (->
-   (meta #'scicloj.metamorph.ml/evaluate-pipelines)
-   :malli/schema
-   (nth 2)
-   (m/explain evaluation-result)
-   (me/humanize))
-
-
-
-
-
-
-  :ok)
+["This creates one nippy file for each evaluation, containing all data of the evaluations."]

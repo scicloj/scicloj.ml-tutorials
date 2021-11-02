@@ -19,11 +19,11 @@
             best-pipe-fn (-> evaluation first first :pipe-fn)
             transform-ctx (best-pipe-fn
                            (merge fit-ctx
-                              {:metamorph/data test :metamorph/mode :transform}))
+                                  {:metamorph/data test :metamorph/mode :transform}))
             metric (metric-fn
-                    (-> transform-ctx :scicloj.metamorph.ml/target-ds :survived dt/->vector)
+                    (-> transform-ctx :model :scicloj.metamorph.ml/target-ds :survived dt/->vector)
                     (-> transform-ctx :metamorph/data :survived dt/->vector))]
         {:pipe-fn best-pipe-fn
          :fit-ctx fit-ctx
-         :metric metric})))
- )
+         :metric metric}))))
+ 

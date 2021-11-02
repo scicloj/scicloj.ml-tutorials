@@ -391,6 +391,7 @@ sequences."]
    (mm/select-columns [:Survived :Pclass])
    (mm/categorical->number [:Survived :Pclass])
    (mm/set-inference-target :Survived)
+   {:metamorph/id :model}
    (mm/model {:model-type :smile.classification/logistic-regression})))
 
 
@@ -446,6 +447,7 @@ taking parameters, see below).
    (mm/select-columns [:Survived :Pclass])
    (mm/categorical->number [:Survived :Pclass])
    (mm/set-inference-target :Survived)
+   {:metamorph/id :model}
    (mm/model {:model-type :smile.classification/logistic-regression
               :max-iterations 1})))
 
@@ -454,6 +456,7 @@ taking parameters, see below).
    (mm/select-columns [:Survived :Pclass])
    (mm/categorical->number [:Survived :Pclass])
    (mm/set-inference-target :Survived)
+   {:metamorph/id :model}
    (mm/model {:model-type :smile.classification/logistic-regression
               :max-iterations 1000})))
 
@@ -490,7 +493,7 @@ from parameters:"]
    (mm/categorical->number [:Survived :Pclass :Sex])
    (mm/set-inference-target :Survived)
    {:metamorph/id :model} (mm/model (merge {:model-type :smile.classification/logistic-regression}
-                                     params))))
+                                           params))))
 
 
 ["This function can now be called to produce a pipeline fn:"]

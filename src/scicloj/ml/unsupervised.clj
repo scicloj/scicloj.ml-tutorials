@@ -17,7 +17,7 @@
          '[scicloj.ml.metamorph :as mm]
          '[scicloj.ml.dataset  :as ds])
 
-["# Iris data"]
+["# Cluster Iris data"]
 
 (def iris
   (->
@@ -27,7 +27,7 @@
 
 
 
-["# k-means clustering"]
+["## k-means clustering"]
 
 (def fit-ctx
   (ml/fit
@@ -74,9 +74,9 @@
 
          
 
-["# Ellbow plot"]
+["## Ellbow plot"]
 
-["## Calculate distortion over n"]
+["### Calculate distortion over n"]
 
 (defn make-pipe [n]
   (ml/pipeline
@@ -130,7 +130,7 @@
        (->> eval-results flatten (map #(get-in % [:fit-ctx :model :model-data :info :distortion])))))
         
 
-["## Calculate silouhette score over n"]
+["### Calculate silouhette score over n"]
 
 (def eval-results-silhouete
   (ml/evaluate-pipelines
