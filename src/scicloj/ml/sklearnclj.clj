@@ -18,18 +18,19 @@
   
 ["# sklearn-clj"]
 
-["The scicloj.ml plugin [sklearn-clj](https://github.com/scicloj/sklearn-clj)
+["The [scicloj.ml](https://github.com/scicloj/scicloj.ml) plugin [sklearn-clj](https://github.com/scicloj/sklearn-clj)
  gives easy access to all models from [scikit-learn](https://scikit-learn.org/stable/)"]
 
 ["After [libpython.clj](https://github.com/clj-python/libpython-clj)
  has been setup with the python package sklearn installed,
-the following lines show how to use any sklearn model in a usual scicloj.ml pipeline:"]
+the following lines show how to use any sklearn model in a usual `scicloj.ml` pipeline:"]
 
 (require '[scicloj.ml.core :as ml]
          '[scicloj.ml.metamorph :as mm]
          '[scicloj.ml.dataset :as ds]
          '[tech.v3.dataset.tensor :as dst]
          '[scicloj.sklearn-clj :as sklearn-clj]
+         '[scicloj.sklearn-clj.ml]
          '[scicloj.metamorph.ml.toydata :as toydata]
          '[libpython-clj2.python :refer [py.-] :as py])
          
@@ -61,7 +62,7 @@ the following lines show how to use any sklearn model in a usual scicloj.ml pipe
  :metamorph/data)
 
 ["Access model details via python interop (libpython-clj)"]
-(-> fitted-ctx :model :model-data
+(-> fitted-ctx :model :model-data :model
     (py.- coef_)
     (py/->jvm))
 
@@ -69,8 +70,18 @@ the following lines show how to use any sklearn model in a usual scicloj.ml pipe
 
 
 
-["All model attributes:"]
-(sklearn-clj/model-attributes (-> fitted-ctx :model :model-data))
+["All model attributes are as well in the context"]
+
+(def model-attributes
+  (-> fitted-ctx :model :model-data :attributes))
+
+^kind/hiccup-nocode
+[:dl (map
+      (fn [[k v]]
+        [:span
+         (vector :dt k)
+         (vector :dd  (clojure.pprint/write v :stream nil))])
+      model-attributes)]
 
 
 
