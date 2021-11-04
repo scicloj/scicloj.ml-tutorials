@@ -29,7 +29,7 @@ the following lines show how to use any sklearn model in a usual scicloj.ml pipe
          '[scicloj.ml.metamorph :as mm]
          '[scicloj.ml.dataset :as ds]
          '[tech.v3.dataset.tensor :as dst]
-         '[scicloj.sklearn-clj]
+         '[scicloj.sklearn-clj :as sklearn-clj]
          '[scicloj.metamorph.ml.toydata :as toydata]
          '[libpython-clj2.python :refer [py.-] :as py])
          
@@ -45,6 +45,7 @@ the following lines show how to use any sklearn model in a usual scicloj.ml pipe
    {:metamorph/id :model}
    (mm/model {:model-type :sklearn.classification/logistic-regression
               :max-iter 100})))
+
 
 ["Train model"]
 (def fitted-ctx
@@ -66,18 +67,11 @@ the following lines show how to use any sklearn model in a usual scicloj.ml pipe
 
 
 
-(def attributes
-  (->> fitted-ctx :model :model-data (py/dir)
-       (filter #(and  (clojure.string/ends-with? % "_")
-                      (not (clojure.string/starts-with? % "_"))))))
-(ml/explain)
+
+
 ["All model attributes:"]
-(map
- (fn [attr]
-   (hash-map (keyword attr)
-             (-> fitted-ctx :model :model-data
-                 (py/get-attr attr))))
- attributes)
+(sklearn-clj/model-attributes (-> fitted-ctx :model :model-data))
+
 
 
 ["# Models"]
