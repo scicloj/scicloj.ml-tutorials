@@ -84,6 +84,8 @@
     (catch Exception e "")))
 
 
+
+
 (defn anchor-or-nothing [x text]
   (if (empty? x)
     [:div ""]
@@ -99,10 +101,12 @@
        (map
         (fn [[key definition]]
           [:div
-           [:h3 (str key)]
+           [:h3 {:id (str key)} (str key)]
            (anchor-or-nothing (:javadoc (:documentation definition)) "javadoc")
            (anchor-or-nothing (:user-guide (:documentation definition)) "user guide")
 
+           ;; [:span (text->hiccup (or
+           ;;                       (get-in @scicloj.ml.core/model-definitions* [key :documentation :description] ) ""))]
 
            [:span
             (dataset->md-hiccup (docu-options key))]
@@ -120,6 +124,11 @@
 
            [:hr]]))))
            
+
+(text->hiccup (or
+               (get-in @scicloj.ml.core/model-definitions*
+                       [:smile.manifold/tsne :documentation :description]) ""))
+
 
 (defn remove-deep [key-set data]
   (clojure.walk/prewalk (fn [node] (if (map? node)

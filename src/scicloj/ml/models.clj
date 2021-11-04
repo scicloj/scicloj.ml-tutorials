@@ -17,14 +17,37 @@
 (comment
   (note/init-with-browser)
   (note/eval-this-notespace)
-  (note/render-static-html "docs/userguide-models.html")) 
+  (note/render-static-html "docs/userguide-models.html"))
+
+
+(require '[scicloj.ml.core :as ml]
+         '[scicloj.ml.metamorph :as mm]
+         '[scicloj.ml.dataset :refer [dataset add-column]]
+         '[scicloj.ml.dataset :as ds]
+         '[tech.v3.dataset.math :as std-math]
+         '[tech.v3.datatype.functional :as dtf]
+         '[scicloj.metamorph.ml.toydata :as datasets])
+
+^kind/hidden
+(def build-in-models
+  (->>
+   (ml/model-definition-names)
+   (filter #(contains? #{"fastmath.cluster"
+                         "smile.classification"
+                         "smile.regression"
+                         "smile.manifold"
+                         "smile.projections"
+                         "xgboost"}
+             (namespace %)))
+   sort))
 
 ["# Models"]
 
 ["scicloj.ml uses the plugin `scicloj.ml.smile` and
 `scicloj.ml.xgboost` by default,
-which gives access to " (count  (ml/model-definition-names)) " models from the java libraries [Smile](https://haifengl.github.io/)
-and [Xgboost](https://xgboost.readthedocs.io/en/latest/jvm/index.html)"]
+which gives access to " (count build-in-models) " models from the java libraries
+[Smile](https://haifengl.github.io/),
+[Xgboost](https://xgboost.readthedocs.io/en/latest/jvm/index.html) and [fastmath](https://github.com/generateme/fastmath)"]
 
 ["More models are avilable via other plugins."]
 
@@ -41,21 +64,24 @@ and [Xgboost](https://xgboost.readthedocs.io/en/latest/jvm/index.html)"]
              :max-nodes 50}))
              
 
-(require '[scicloj.ml.core :as ml]
-         '[scicloj.ml.metamorph :as mm]
-         '[scicloj.ml.dataset :refer [dataset add-column]]
-         '[scicloj.ml.dataset :as ds]
-         '[tech.v3.dataset.math :as std-math]
-         '[tech.v3.datatype.functional :as dtf]
-         '[scicloj.metamorph.ml.toydata :as datasets])
+
          
 
 ["The documentation below points as well to the javadoc and user-guide chapter (for Smile models)"]
 
 ["The full list of build in models is:"]
-(->
- (ml/model-definition-names)
- sort)
+^kind/hiccup-nocode
+[:ul
+
+ (map
+  #(vector :li [:a {:href (str "#" (str %))} (str %)])
+  build-in-models)]
+  
+
+
+
+
+
 
 ["## Smile classification models"]
 ^kind/hiccup-nocode (render-key-info ":smile.classification/ada-boost")

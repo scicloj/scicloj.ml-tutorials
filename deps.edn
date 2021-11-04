@@ -9,7 +9,7 @@
         org.clojure/clojure {:mvn/version "1.10.3"}
         scicloj/scicloj.ml {:mvn/version "0.1.1"}
         scicloj/scicloj.ml.smile {:git/url "https://github.com/scicloj/scicloj.ml.smile.git"
-                                  :git/sha "635a586807ecba97cfb6ccdf194552f38e3d02e0"}
+                                  :git/sha "2da6b70009f85631d2f5ff8c48824a6a4c83c0d2"}
         clj-djl/clj-djl {:mvn/version "0.1.6" :exclusions [org.slf4j/slf4j-simple]}
         ch.qos.logback/logback-classic {:mvn/version "1.3.0-alpha10"}
         scicloj/notespace {:mvn/version "3-beta9"}
