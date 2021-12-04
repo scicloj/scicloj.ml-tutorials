@@ -135,32 +135,19 @@
                                  :evaluator (t/accuracy)
                                  :listeners (listener/logging)}))
 
-(def all-data
-  (->
-   (ds/concat train-ds test-ds)
-   (ds/drop-columns ["Id"])
-   (ds/set-inference-target "SalePrice")
-   (tech.v3.dataset/replace-missing ds/numeric :value 0)
-   (tech.v3.dataset/replace-missing ds/categorical :value "None")
-   (update-columns numeric-features
-                   #(dfn// (dfn/- % (dfn/mean %))
-                           (dfn/standard-deviation %)))
-   (ds/categorical->one-hot ds/categorical)))
-
-(tech.v3.dataset/columns-with-missing-seq all-data)
-
-(def processed-train-ds
-  (ds/head all-data (ds/row-count train-ds)))
-
-(def processed-test-ds
-  (ds/tail all-data (ds/row-count test-ds)))
-
 
 
 (def pipe
   (ml/pipeline
 
-
+   (mm/drop-columns ["Id"])
+   (mm/set-inference-target "SalePrice")
+   (mm/replace-missing :type/numerical :value 0)
+   (mm/replace-missing :!type/numerical :value "None")
+   (ml/lift update-columns numeric-features
+            #(dfn// (dfn/- % (dfn/mean %))
+                    (dfn/standard-deviation %)))
+   (mm/transform-one-hot :!type/numerical :full)
    (mm/update-column "SalePrice"
                      #(dfn// % (dfn/mean %)))
 
@@ -170,28 +157,30 @@
               :batchsize 64
               :model-spec {:name "mlp" :block-fn net}
               :model-cfg (cfg)
-              :initial-shape (nd/shape 1 310)
+              :initial-shape (nd/shape 1 311)
               :nepoch 1})))
 
 
 
 
 (def trained-pipeline
-  (pipe {:metamorph/data processed-train-ds
-         :metamorph/mode :fit}))
+  (pipe {:metamorph/data train-ds
+         :metamorph/mode :fit
+         :metamorph.ml/full-ds (ds/concat train-ds test-ds)}))
 
 
          
 (def predicted-pipeline
   (pipe
    (merge trained-pipeline
-          {:metamorph/data processed-test-ds
+          {:metamorph/data test-ds
            :metamorph/mode :transform})))
 
 
 
+
 ( get
- (:metamorph/data trained-pipeline)
+ (:metamorph/data predicted-pipeline)
  "SalePrice")
 
 

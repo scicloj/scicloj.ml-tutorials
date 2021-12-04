@@ -54,7 +54,7 @@ So we use Java models internally, but without the need for Java
 interop by the user.
 
 Documentation for existing models is appearing here:
-https://scicloj.github.io/scicloj.ml/userguide-models.html
+https://scicloj.github.io/scicloj.ml-tutorials/userguide-models.html
 
 The abstraction is independent from Smile, so we could makes bridges to other libraries, even in non JVM languages (python, R)
 
@@ -199,7 +199,7 @@ from namespace scicloj.ml.metamorph"]
 ["In scicloj.ml the model functions receives a single dataset,
 in which the inference target column is marked as such. The model
 to use is a parameter of the `model` function. All built-in
-models are listed here: https://scicloj.github.io/scicloj.ml/userguide-models.html"]
+models are listed here: https://scicloj.github.io/scicloj.ml-tutorials/userguide-models.html"]
  
 
 ["In the titanic dataset the `survived` column is a categorical variable.

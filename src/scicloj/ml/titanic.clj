@@ -23,7 +23,6 @@
          '[clojure.string :as str]
          '[fastmath.stats :as stats]
          '[fastmath.random :as rnd]
-         '[fitdistr.core :as fit]
          '[scicloj.ml.xgboost] :reload)
           
 

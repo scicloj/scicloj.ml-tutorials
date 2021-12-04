@@ -92,6 +92,7 @@ which prints the current declartive pipeline."]
 ["Write results to disk"]
 
 
+(def created-files (atom []))
 
 (def  evaluation-result
   (ml/evaluate-pipelines

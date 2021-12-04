@@ -477,7 +477,7 @@ taking parameters, see below).
 
 
 ["This gives 2 * 10 = 20 results:"]
-(map  :metric (flatten eval-results))
+(map   #(get-in % [:train-transform :metric]) (flatten eval-results))
 
 
 ["#### Evaluate several pipeline with Titanic example - grid search pipelines"]
