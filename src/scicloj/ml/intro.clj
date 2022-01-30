@@ -272,7 +272,7 @@ which we can easily transform into the original categories.
 ["This shows the predicted survival. "]
 
 ["The documentation of `mm/model` here https://scicloj.github.io/scicloj.ml/scicloj.ml.metamorph.html#var-model"
- "documents this special behavior of the function, which does somthing different in mode :fit vs mode :transform"]
+ "documents this special behavior of the function, which does something different in mode :fit vs mode :transform"]
 
 ["Any form of feature-engineering takes now the same form.
 We will successively
