@@ -40,6 +40,7 @@
            
      (view/markdowns->hiccup mds)]))
 
+
 (defmethod kind/kind->behaviour ::dataset-nocode
   [_]
   {:render-src?   false
@@ -52,9 +53,9 @@
      (or
       (get-in @scicloj.ml.core/model-definitions* [model-key :options])
       {:name [] :type [] :default []}))
-      
+
     (tc/reorder-columns :name :type :default))
-    
+
    ::dataset-nocode))
    
   
@@ -209,7 +210,7 @@
     {:layer
      [
 
-      {:data {:values (tc/rows grid-ds-prediction :as-maps)}
+      {:data {:values (seq (tc/rows grid-ds-prediction :as-maps))}
        :title (str "Decision surfaces for model: " (:model-type model-options))
        :width 500
        :height 500
@@ -228,7 +229,7 @@
                   :color {:field :predicted-species}}}
                   
 
-      {:data {:values (tc/rows ds-prediction :as-maps)}
+      {:data {:values (seq (tc/rows ds-prediction :as-maps))}
 
        :width 500
        :height 500
@@ -249,3 +250,25 @@
                          
                   :stroke { :value :black}
                   :size {:value 300}}}]}))
+
+(defn select-paths-from-set [current-path path-set data]
+  (cond
+    (map? data) (into {}
+                      (remove nil?)
+                      (for [[k v] data]
+                        (let [p (conj current-path k)]
+                          (if (contains? path-set p)
+                            [k (select-paths-from-set p path-set v)]))))
+    (sequential? data) (mapv (partial select-paths-from-set current-path path-set) data)
+    :default data))
+
+(defn select-paths [data paths]
+  (select-paths-from-set []
+                         (into #{}
+                               (mapcat #(take-while seq (iterate butlast %)))
+                               paths)
+                         data))
+
+(defn select-minimal-result [result]
+    (select-paths result [[:train-transform :metric]
+                          [:test-transform :metric]]))

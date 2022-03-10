@@ -3,7 +3,9 @@
            [notespace.kinds :as kind]
            [scicloj.ml.ug-utils :refer :all]
            [dk.simongray.datalinguist.ml.crf]
-           [clj-djl.mmml]))
+           [scicloj.ml.clj-djl.mmml]
+           [scicloj.ml.clj-djl.fasttext]
+           [tech.v3.libs.arrow :as arrow]))
 
 (comment
   (note/init-with-browser)
@@ -11,8 +13,6 @@
   (note/reread-this-notespace)
   (note/render-static-html "docs/userguide-third_party.html")
   (note/init))
-  
-
 
 
 (require '[scicloj.ml.core :as ml]
@@ -24,11 +24,7 @@
          '[scicloj.ml.xgboost]
          '[camel-snake-kebab.core :as csk])
 
-(comment
-  (->> (cp/classpath)
-       (ns-find/find-ns-decls)
-       (map second)
-       (filter #(clojure.string/includes? (name %) "kebab"))))
+
 
 
 
@@ -188,8 +184,46 @@
 (render-key-info ":clj-djl/djl")
 
 
-["# A NER model from Standford CorenLP"]
+["# A NER model from Standford CoreNLP"]
 
 ^kind/hiccup-nocode
 (render-key-info ":corenlp")
 
+
+["# Fastext text lassification rom DJL"]
+
+^kind/hiccup-nocode
+(render-key-info ":clj-djl/fasttext")
+
+(def tweets
+  (->
+   (ds/dataset "data/tweets_sentiment.csv" {:key-fn keyword})
+   (ds/drop-columns [:id])))
+;; (def tweets
+;;   (arrow/stream->dataset "data/tweets_sentiment.feather"))
+
+
+;; (require  '[tech.v3.libs.arrow])
+
+
+
+^kind/dataset
+tweets
+
+(def split (first (ds/split->seq
+                   (ds/shuffle tweets)
+                   :holdout)))
+
+
+
+(def model
+  (ml/train (-> (:train split)
+                (tech.v3.dataset.modelling/set-inference-target :label))
+            {:model-type :clj-djl/fasttext
+             :ft-training-config {:epoch 1}}))
+
+(def
+  prob-distribution
+  (ml/predict (:test split) (assoc model
+                                   :top-k 3)))
+prob-distribution

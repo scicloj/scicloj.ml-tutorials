@@ -5,7 +5,7 @@
    [notespace.view :as view]
    [tablecloth.api :as tc]
    [scicloj.ml.core]
-   [scicloj.sklearn-clj.ml]
+   [scicloj.ml.sklearnclj]
    [clojure.string :as str]
    [scicloj.ml.ug-utils :refer :all]
    [clojure.java.io :as io]))

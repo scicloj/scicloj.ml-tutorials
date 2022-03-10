@@ -380,7 +380,7 @@ which cover in a smart way the hyper-parameter space."]
 
 
     :map-fn :map
-    :result-dissoc-seq []}))
+    }))
     
 
 
@@ -482,7 +482,8 @@ prediction-ds
                          {:map-fn :map
                           :return-best-pipeline-only false
                           :return-best-crossvalidation-only false
-                          :result-dissoc-in-seq []}))
+                          :evaluation-handler-fn identity}))
+                          
 (def train-counts
   (->> training-curve-evaluations flatten (map #(-> % :fit-ctx :metamorph/data ds/row-count))))
 

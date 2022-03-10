@@ -19,3 +19,6 @@
 /.lsp/
 /.project
 /.settings/
+/.clerk/
+/.vscode/
+/cache_dir/

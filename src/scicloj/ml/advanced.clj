@@ -53,7 +53,7 @@ step function is executed:
 ;;  step 1
 ;;  step 2
    {:metamorph/id :my-model} (mm/select-columns [:time])))
-   
+
 
 ["This map can have any key / value, which might be useful for injecting other static data into the pipeline."]
 
@@ -85,7 +85,7 @@ at keys `:scicloj.metamorph.ml/feature-ds` and  `:scicloj.metamorph.ml/target-ds
    ;; (mm/step-2)
    ;; (mm/step-3)
    ;; (mm/step-4)
-   
+
 
 (def trained-ctx
   (pipe-fn {:metamorph/data train-data
@@ -104,7 +104,7 @@ trained-ctx
    ;; (mm/step-2)
    ;; (mm/step-3)
    ;; (mm/step-4)
-   
+
 
 (def ctx
   (pipe-fn {:metamorph/data train-data
@@ -127,14 +127,14 @@ ctx-2
   2. Model type of functions. They use :metamorph/data , :metamorph/mode and :metamorph/id  and behave different in mode :fit and :mode transform. Eventually they use other keys in the context.
   2a. This variants of type 2), might use non standard keys to pass data between different steps and therefore collaborate.
 "]
- 
+
 
 ["## Custom dataset->dataset transforming functions "]
 
 ["Most steps of a pipeline are about modifying the dataset, so most custom code will be here.
 In machine learning, this is as well known as feature engineering, as new features get created
 from existing features."]
- 
+
 
 ["For a custom data manipulation function to be able to participate in a metamorph pipeline
 it needs to:
@@ -249,7 +249,7 @@ run in mode :transform.
 Conceptually this function is a pair of train/predict functions, which behaves like `train` in mode :fit and
 `predict` in mode :transform.
 "]
- 
+
 
 (defn mean-model []
   (fn [{:metamorph/keys [id data mode] :as ctx}]
@@ -268,7 +268,7 @@ Conceptually this function is a pair of train/predict functions, which behaves l
 (def pipe-fn
   (ml/pipeline
    (mean-model)))
-   
+
 
 ["We run the training as usual, passing a map of data and mode :fit. (The id gets added automatically)"]
 
@@ -342,11 +342,11 @@ allow to hyper-tune the model parameters but as well the whole transformation pi
 and  a `metric function`. It will then do a nested loop of all pipelines and all
 train/test pairs and calculate the given  model metrics for all combinations.
 (which means to `train` and `evaluate` all pipelines using the train/test dataset pairs. "]
- 
+
 
 ["By preparing the seq of pipelines and the seq of train/test pairs accordingly,
 various types of grid search with various cross-validation schemes can be realized."]
- 
+
 
 
 
@@ -360,14 +360,14 @@ sequences."]
   ;; whatever needed to get all pipeline fns
   ;; typically these are variations of one single pipeline, where some parameters are different
   ;; (but this is not required, the pipelines can be completely different)
-  
+
 
 (def train-test-data-pairs)
   ;; some form of split of test data, such as:
   ;; holdout
   ;; k-fold
   ;; leave-one-out
-  
+
 
 ;; evaluate all pipelines
 (comment
@@ -394,14 +394,13 @@ sequences."]
    {:metamorph/id :model}
    (mm/model {:model-type :smile.classification/logistic-regression})))
 
-
 ["The sequence of pipeline functions consists for this example of a sequence with a single pipeline."]
 (def all-pipelines [pipe-fn])
 
 ["For creating train/test pairs, the function `scicloj.ml.dataset/split->seq`
  creates them in the right format (list of maps with keys :train and :test and value being
 a `tech.ml.dataset`)"]
- 
+
 
 (def train-test-data-pairs (ds/split->seq titanic-data :holdout))
 
@@ -485,7 +484,7 @@ taking parameters, see below).
 ["Now we will **generate** our seq of pipeline functions."
  "First we need a function which creates a pipeline function
 from parameters:"]
- 
+
 
 (defn create-pipe-fn [params]
   (ml/pipeline
@@ -517,7 +516,7 @@ intervals in the boundaries of the options."
 See help of the ml/sobol-gridsearch for more information."
  "This gives us 20 grid points for our parameter search,
 which we can easily transform in a sequence of 20 pipeline functions:"]
- 
+
 
 (def all-pipelines
   (map create-pipe-fn all-options))
@@ -528,7 +527,6 @@ which we can easily transform in a sequence of 20 pipeline functions:"]
                                          ml/classification-accuracy
                                          :accuracy
                                          {:map-fn :map
-                                          :result-dissoc-in-seq []
                                           :return-best-pipeline-only false
                                           :return-best-crossvalidation-only false}))
 
@@ -631,18 +629,16 @@ best-logistic-regression-model
        (let [p (-> ctx :scicloj.ml.smile.metamorph/bow->sparse-vocabulary
                    :vocab
                    count)]
-                   
+
          ((mm/model {:p p
                      :model-type :smile.classification/maxent-multinomial
                      :sparse-column :bow-sparse})
           ctx))
-         
+
        ctx)))
-       
-     
+
+
 
   (def trained-ctx
     (pipe-fn {:metamorph/data (:train reviews-split)
               :metamorph/mode :fit})))
-
-  
