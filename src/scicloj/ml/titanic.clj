@@ -23,7 +23,7 @@
          '[clojure.string :as str]
          '[fastmath.stats :as stats]
          '[fastmath.random :as rnd]
-         '[scicloj.ml.xgboost] :reload)
+         '[scicloj.ml.xgboost])
           
 
 
@@ -379,8 +379,8 @@ which cover in a smart way the hyper-parameter space."]
     ;;                          (println (:metric m)))
 
 
-    :map-fn :map
-    }))
+    :map-fn :map}))
+    
     
 
 

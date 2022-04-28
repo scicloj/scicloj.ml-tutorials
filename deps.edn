@@ -13,7 +13,7 @@
                                         :git/sha "a8fb5015ffee38baec17a9d47440db5435c7307e"}
 
         org.scicloj/scicloj.ml.clj-djl {:mvn/version "0.1.10"}
-        scicloj/scicloj.ml.xgboost     {:mvn/version "5.1"}
+        scicloj/scicloj.ml.xgboost     {:mvn/version "5.1.1"}
         scicloj/sklearn-clj            {:mvn/version "0.3.7"}
 
         techascent/tech.ml.dataset     {:mvn/version "6.072"}
