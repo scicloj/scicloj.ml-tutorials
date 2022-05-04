@@ -12,8 +12,8 @@
   (clerk/clear-cache!))
 
 ;; The following python code can be expressed  as Clojure in
-;; 4 different ways
-
+;; 5 different ways
+ 
 ^{::clerk/visibility #{:hide}}
 (clerk/code
  "
