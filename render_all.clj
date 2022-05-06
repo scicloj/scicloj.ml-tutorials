@@ -12,7 +12,9 @@
           {:ns 'scicloj.ml.third-party :output-file "docs/userguide-third_party.html"}
           {:ns 'scicloj.ml.titanic :output-file "docs/userguide-titanic.html"}
           {:ns 'scicloj.ml.experiment-tracking :output-file "docs/userguide-experiment-tracking.html"}
-          {:ns 'scicloj.ml.unsupervised :output-file "docs/userguide-unsupervised.html"}])
+          {:ns 'scicloj.ml.unsupervised :output-file "docs/userguide-unsupervised.html"}
+          {:ns 'scicloj.ml.categorical :output-file "docs/userguide-categrical.html"}])
+
 
 
 (note/init :port 5678)

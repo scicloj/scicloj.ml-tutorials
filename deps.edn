@@ -12,7 +12,7 @@
         scicloj/scicloj.ml.smile       {:git/url "https://github.com/scicloj/scicloj.ml.smile"
                                         :git/sha "a8fb5015ffee38baec17a9d47440db5435c7307e"}
 
-        org.scicloj/scicloj.ml.clj-djl {:mvn/version "0.1.10"}
+        org.scicloj/scicloj.ml.clj-djl {:mvn/version "0.1.11"}
         scicloj/scicloj.ml.xgboost     {:mvn/version "5.1.1"}
         scicloj/sklearn-clj            {:mvn/version "0.3.7"}
 
@@ -46,6 +46,10 @@
                                           :sha "ca34283a67bf18c8025955865fb567bd6e2e9a9a"}
         appliedsciencestudio/rdata     {:git/url "https://github.com/appliedsciencestudio/rdata/"
                                         :sha "151e6dead06b38995f1f30b09d954a060f7a2a9c"}}
+
+
+
+        
         
 
         

@@ -41,7 +41,7 @@ but lacks consistency in some parts.
 
 ["This was addressed by an other library, layering on top of it, called
 `tablecloth`. It is available [here](https://github.com/scicloj/tablecloth)"]
- 
+
 
 ["So we have now a very reliable, mature, easy to use library to store and manipulate tabular data, including text."]
 
@@ -71,7 +71,7 @@ sometimes they are very complex. In some contexts this is as well called
 complex dataset transformations.
 This transformations are mostly dataset to dataset transformations.
 "]
- 
+
 
 ["These pipelines need to be repeatable and self-contained,
 as they need to run several times with different data or in variants
@@ -170,12 +170,12 @@ in three simple namespaces.
 
 
 
-["To start we need to require a few namespaces"
+["To start we need to require a few namespaces"]
 
- (require '[scicloj.ml.core :as ml]
-          '[scicloj.ml.metamorph :as mm]
-          '[scicloj.ml.dataset :refer [dataset add-column] :as ds])]
-         
+(require '[scicloj.ml.core :as ml]
+         '[scicloj.ml.metamorph :as mm]
+         '[scicloj.ml.dataset :refer [dataset add-column] :as ds])
+
 
 
 ["First we load the data."]
@@ -184,7 +184,7 @@ in three simple namespaces.
    (ds/dataset "https://github.com/scicloj/metamorph-examples/raw/main/data/titanic/train.csv"
                {:key-fn keyword
                 :parser-fn :string})))
-                
+
 
 (def titanic-test
   (->
@@ -200,7 +200,7 @@ from namespace scicloj.ml.metamorph"]
 in which the inference target column is marked as such. The model
 to use is a parameter of the `model` function. All built-in
 models are listed here: https://scicloj.github.io/scicloj.ml-tutorials/userguide-models.html"]
- 
+
 
 ["In the titanic dataset the `survived` column is a categorical variable.
 All target variables for classification need to be transformed first
@@ -208,7 +208,7 @@ into numbers, the model can work with. This is done by the function
 `categorical->number`. The mapping for this is stored in the dataset on the column
 and can be later retrieved to transform the numeric prediction back to its
 categorical form."]
- 
+
 
 ["In `scicloj.ml` we pass a whole dataset to a model, and we need to mark
 the inference target via function `set-inference-target`.
@@ -264,7 +264,7 @@ which we can easily transform into the original categories.
 ;; ^kind/dataset
 (-> test-ctx :metamorph/data
     (ds/column-values->categorical :Survived))
-    
+
 
 
 
@@ -279,3 +279,6 @@ We will successively
 add more and more steps into the pipeline to improve the model."]
 
 ["This can be build-in functions or custom functions as we see later"]
+
+
+(+ 1 1 (+ 2 2))
