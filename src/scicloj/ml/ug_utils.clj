@@ -19,7 +19,7 @@
                                     {:diagram_source s
                                      :diagram_type (name type)
                                      :output_format (name format)}}))
-
+(py/initialize!)
 (def doc->markdown (py/import-module "docstring_to_markdown"))
 
 
