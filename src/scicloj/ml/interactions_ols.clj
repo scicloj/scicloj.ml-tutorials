@@ -39,7 +39,7 @@
 
 ["## Additive model"]
 
-["Firts we build an additiv model, which model equatio is 'sales = b0 + b1*youtube + b2*facebook'"]
+["Firts we build an additive model, which model equation is 'sales = b0 + b1 * youtube + b2 * facebook'"]
 
 (def additive-pipeline
   (ml/pipeline
@@ -74,7 +74,7 @@
 (-> evaluations flatten first :test-transform :other-metrices first :metric)
 
 ["## Interaction effects"]
-["Know we add interaction effects to it, resulting in this model equation: 'sales = b0 + b1*youtube + b2*facebook + b3*(youtube*facebook)'"]
+["Now we add interaction effects to it, resulting in this model equation: 'sales = b0 + b1 * youtube + b2 * facebook + b3 * (youtube * facebook)'"]
 (def pipe-interaction
   (ml/pipeline
    (mm/drop-columns [:newspaper])
@@ -82,7 +82,7 @@
    (mm/set-inference-target :sales)
    {:metamorph/id :model}(mm/model {:model-type :smile.regression/ordinary-least-square})))
 
-["Agin we evaluate the model,"]
+["Again we evaluate the model,"]
 (def evaluations
   (ml/evaluate-pipelines
    [pipe-interaction]
@@ -99,7 +99,7 @@
  (str
   (-> evaluations flatten first :fit-ctx :model ml/thaw-model str)))
 
-["As the multiplcation of 'youtube*facebook' is as well statistically relevant, it
+["As the multiplcation of 'youtube * facebook' is as well statistically relevant, it
 suggests that there is indeed an interaction between these 2 predictor variables youtube and facebook."]
 
 ["RMSE"]
