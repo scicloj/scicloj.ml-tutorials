@@ -537,45 +537,51 @@ iris
 ;;  The pipleines could b completely different, but need to accept the same input data and
 ;;  produce the same predictions (target column name and type)
 ;;
+
+
 (defn make-iris-pipeline [model-type]
   (ml/pipeline
    (mm/select-columns [:species :sepal_length :sepal_width])
    (mm/set-inference-target :species)
    (mm/categorical->number [:species])
-
    {:metamorph/id :model}
    (mm/model
     {:model-type model-type})))
 
+^{:nextjournal.clerk/visibility #{:show}}
 (def tree-pipeline
   (make-iris-pipeline :smile.classification/decision-tree))
  
-
+^{:nextjournal.clerk/visibility #{:show}}
 (def knn-pipeline
   (make-iris-pipeline :smile.classification/knn))
   
-
+^{:nextjournal.clerk/visibility #{:show}}
 (def logistic-regression-pipeline
   (make-iris-pipeline :smile.classification/logistic-regression))
   
 
-;;  Know we can contruct an enseme, using function `ensemble-pipe`
-
+;;  Know we can contruct an ensembe, using function `ensemble-pipe`
+^{:nextjournal.clerk/visibility #{:show}}
 (def ensemble (ml/ensemble-pipe [tree-pipeline
                                  knn-pipeline
                                  logistic-regression-pipeline]))
 
-;;  thos ensemble is as any other metamorh pipeline,
+;;  This ensemble is as any other metamorph pipeline,
 ;;  so we can train and predict as usual:
 
+^{:nextjournal.clerk/visibility #{:show}}
 (def fitted-ctx-ensemble
   (ml/fit-pipe iris-std ensemble))
 
+^{:nextjournal.clerk/visibility #{:show}}
 (def transformed-ctx-ensemble
   (ml/transform-pipe iris-std ensemble fitted-ctx-ensemble))
 
 
 ;;  Frequency of predictions
+
+^{:nextjournal.clerk/visibility #{:show}}
 (->
  transformed-ctx-ensemble
  :metamorph/data
@@ -585,12 +591,7 @@ iris
 
 ;;  The surface plot of the ensemble
 
+^{:nextjournal.clerk/visibility #{:show}}
 (clerk/vl (surface-plot iris-std
-                            [:sepal_length :sepal_width]
-                            ensemble "voting ensemble"))
-
-
-
-
-
-
+                        [:sepal_length :sepal_width]
+                        ensemble "voting ensemble"))
