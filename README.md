@@ -14,7 +14,7 @@ The Clojure machine learning library scicloj.ml is documented here:
 * [kmeans in Python vs Clojure](https://scicloj.github.io/scicloj.ml-tutorials/polyglot_kmeans.html)
 * [Experiment tracking](https://scicloj.github.io/scicloj.ml-tutorials/userguide-experiment-tracking.html)
 * [Unsupervised learning](https://scicloj.github.io/scicloj.ml-tutorials/userguide-unsupervised.html)
-* [Variable interaction in linear regression](https://scicloj.github.io/scicloj.ml-tutorials/interations_ols.html)
+* [Variable interaction in linear regression](https://scicloj.github.io/scicloj.ml-tutorials/interactions_ols.html)
 
 
 The source files for this documentation using  [notespace](https://github.com/scicloj/notespace) 
