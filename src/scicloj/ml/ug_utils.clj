@@ -140,39 +140,44 @@
   (let [diff (- end start)]
     (range start end (/ diff n-steps))))
 
-(defn surface-plot [iris cols model-options]
-  (let [pipe-fn ;; pipeline including model
+(defn surface-plot [iris cols raw-pipe-fn model-name]
+  (let [
+        pipe-fn
         (ml/pipeline
          (mm/select-columns (concat [:species] cols))
-         (mm/set-inference-target :species)
-         (mm/categorical->number [:species])
-         (mm/model model-options))
+         raw-pipe-fn)
 
-         
+
 
         fitted-ctx
         (pipe-fn
          {:metamorph/data iris
           :metamorph/mode :fit})
 
+
+        _ (def fitted-ctx fitted-ctx)
         ;; getting plot boundaries
-        min-x (-  (-> (get iris (first cols))  dtf/reduce-min) 0.2)
+        min-x (- (-> (get iris (first cols)) dtf/reduce-min) 0.2)
         min-y (- (-> (get iris (second cols)) dtf/reduce-min) 0.2)
-        max-x (+  (-> (get iris (first cols))  dtf/reduce-max) 0.2)
-        max-y (+  (-> (get iris (second cols)) dtf/reduce-max) 0.2)
+        max-x (+ (-> (get iris (first cols)) dtf/reduce-max) 0.2)
+        max-y (+ (-> (get iris (second cols)) dtf/reduce-max) 0.2)
 
 
         ;; make a grid for the decision surface
         grid
         (for [x1 (stepped-range min-x max-x 100)
               x2 (stepped-range min-y max-y 100)]
-              
+
           {(first cols) x1
            (second cols) x2
            :species nil})
 
-        grid-ds (tc/dataset  grid)
+        grid-ds (tc/dataset grid)
 
+
+        _ (def grid-ds grid-ds)
+        _ (def fitted-ctx fitted-ctx)
+        _ (def pipe-fn pipe-fn)
         ;; predict for all grid points
         prediction-grid
         (->
@@ -184,6 +189,24 @@
          :metamorph/data
          (ds-mod/column-values->categorical :species)
          seq)
+
+        ;; (def x
+        ;;   (->
+        ;;    (pipe-fn
+        ;;     (merge
+        ;;      fitted-ctx
+        ;;      {:metamorph/data grid-ds
+        ;;       :metamorph/mode :transform}))
+        ;;    :metamorph/data))
+
+
+
+        ;; (ds-mod/dataset->categorical-xforms x)
+        ;; (ds-mod/column-values->categorical x :species)
+        ;; (tech.v3.dataset.categorical/dataset->categorical-maps x)
+
+
+
 
         grid-ds-prediction
         (tc/add-column grid-ds :predicted-species prediction-grid)
@@ -211,7 +234,7 @@
      [
 
       {:data {:values (seq (tc/rows grid-ds-prediction :as-maps))}
-       :title (str "Decision surfaces for model: " (:model-type model-options))
+       :title (str "Decision surfaces for model: " model-name)
        :width 500
        :height 500
        :mark {:type "square" :opacity 0.9 :strokeOpacity 0.1 :stroke nil},
