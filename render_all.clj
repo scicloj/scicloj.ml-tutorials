@@ -9,7 +9,6 @@
           {:ns 'scicloj.ml.intro                :output-file "docs/userguide-intro.html"}
           {:ns 'scicloj.ml.advanced             :output-file "docs/userguide-advanced.html"}
           {:ns 'scicloj.ml.categorical          :output-file "docs/userguide-categrical.html"}
-          {:ns 'scicloj.ml.polyglot-kmeans      :output-file "docs/polyglot_kmeans.html"}
           {:ns 'scicloj.ml.transformers         :output-file "docs/userguide-transformers.html"}
           {:ns 'scicloj.ml.titanic              :output-file "docs/userguide-titanic.html"}
           {:ns 'scicloj.ml.tune-titanic         :output-file "docs/tune-titanic.html"}
@@ -37,5 +36,12 @@
 
 (println
  (clojure.java.shell/sh "mv" "output/index.html" "docs/userguide-models.html"))
+
+(clerk/build! {:paths ["src/scicloj/ml/polyglot_kmeans.clj"]
+               :bundle? true
+               :out-path "output"})
+
+(println
+ (clojure.java.shell/sh "mv" "output/index.html" "docs/polyglot_kmeans.html"))
 
 (System/exit 0)
