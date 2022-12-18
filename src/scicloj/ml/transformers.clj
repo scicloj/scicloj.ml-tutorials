@@ -167,7 +167,7 @@ ctx-sparse
 ^kind/dataset
 (ml/pipe-it
  bow-ds
- (mm/bow->tfidf :bow :tfidf))
+ (mm/bow->tfidf :bow :tfidf {}))
 
 
 

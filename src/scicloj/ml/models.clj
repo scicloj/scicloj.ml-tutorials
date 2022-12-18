@@ -4,6 +4,7 @@
   (:require
    [nextjournal.clerk :as clerk]
    [scicloj.ml.ug-utils :as utils]
+   [scicloj.ml.dataset :as ds]
    [scicloj.ml.ug-utils-clerk :as utils-clerk]
    [tablecloth.api :as tc]))
 
@@ -25,8 +26,8 @@
 
 ^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (clerk/add-viewers! [{:pred tc/dataset?
-                      :transform-fn (clerk/update-val #(clerk/table {:head (ds/column-names %)
-                                                                     :rows (ds/rows % :as-seq)}))}])
+                      :transform-fn (clerk/update-val #(clerk/table {:head (tc/column-names %)
+                                                                     :rows (tc/rows % :as-seq)}))}])
 ^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (def build-in-models
   (->>
