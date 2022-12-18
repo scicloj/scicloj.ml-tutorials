@@ -147,15 +147,10 @@
          (mm/select-columns (concat [:species] cols))
          raw-pipe-fn)
 
-
-
         fitted-ctx
         (pipe-fn
          {:metamorph/data iris
           :metamorph/mode :fit})
-
-
-        _ (def fitted-ctx fitted-ctx)
         ;; getting plot boundaries
         min-x (- (-> (get iris (first cols)) dtf/reduce-min) 0.2)
         min-y (- (-> (get iris (second cols)) dtf/reduce-min) 0.2)
@@ -175,9 +170,6 @@
         grid-ds (tc/dataset grid)
 
 
-        _ (def grid-ds grid-ds)
-        _ (def fitted-ctx fitted-ctx)
-        _ (def pipe-fn pipe-fn)
         ;; predict for all grid points
         prediction-grid
         (->
@@ -189,24 +181,6 @@
          :metamorph/data
          (ds-mod/column-values->categorical :species)
          seq)
-
-        ;; (def x
-        ;;   (->
-        ;;    (pipe-fn
-        ;;     (merge
-        ;;      fitted-ctx
-        ;;      {:metamorph/data grid-ds
-        ;;       :metamorph/mode :transform}))
-        ;;    :metamorph/data))
-
-
-
-        ;; (ds-mod/dataset->categorical-xforms x)
-        ;; (ds-mod/column-values->categorical x :species)
-        ;; (tech.v3.dataset.categorical/dataset->categorical-maps x)
-
-
-
 
         grid-ds-prediction
         (tc/add-column grid-ds :predicted-species prediction-grid)

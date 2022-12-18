@@ -5,7 +5,8 @@
 
 
 (comment
-  (note/init-with-browser))
+  (note/init-with-browser)
+  (note/eval-and-realize-this-notespace))
 
 (require '[scicloj.ml.core :as ml]
          '[scicloj.ml.metamorph :as mm]

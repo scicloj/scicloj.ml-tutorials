@@ -3,7 +3,7 @@
    [notespace.api :as note]
    [notespace.kinds :as kind]
    [scicloj.sklearn-clj.ml]
-   [scicloj.ml.ug-utils :refer :all]))
+   [scicloj.ml.ug-utils]))
    
 
 
@@ -111,9 +111,9 @@ they refer to the python spelling of the parameter. But the translation between 
 
 ["## Sklearn classification"]
 ^kind/hiccup-nocode
-(render-key-info ":sklearn.classification")
+(scicloj.ml.ug-utils/render-key-info ":sklearn.classification")
 
 
 ["## Sklearn regression"]
 ^kind/hiccup-nocode
-(render-key-info ":sklearn.regression")
+(scicloj.ml.ug-utils/render-key-info ":sklearn.regression")

@@ -1,4 +1,5 @@
-^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}
+  :nextjournal.clerk/toc true}
 (ns scicloj.ml.models
   (:require
    [tablecloth.api :as tc]
@@ -85,7 +86,9 @@
 
 ;; ## Smile classification models
 
-
+^{:nextjournal.clerk/visibility {:code :hide}}
+(clerk/html
+ (utils-clerk/render-key-info :smile.classification/ada-boost))
 ;; In this example we will use the capability of the Ada boost classifier
 ;; to give us the importance of variables.
 
@@ -146,7 +149,7 @@
              :y {:field :importance :type "quantitative"}}})
 
 
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html
  (utils-clerk/render-key-info ":smile.classification/decision-tree"))
 
@@ -299,10 +302,12 @@
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/sparse-svm"))
 
+;; ### svmsvm
 ^{:nextjournal.clerk/visibility {:code :hide}}
+(clerk/md "### svm")
 (clerk/html (utils-clerk/render-key-info ":smile.classification/svm"))
 
-;; ## Smile regression
+;; ## Smile regression models
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.regression/elastic-net"))
 
@@ -485,19 +490,19 @@
 (clerk/html (utils-clerk/render-key-info ":smile.regression/ridge"))
 
 
-;; ## Xgboost
+;; ## Xgboost model
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":xgboost"))
 
-;; ## fastmath.cluster
+;; ## Fastmath clustering
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info :fastmath.cluster))
 
-;; ## smile.projections
+;; ## Smile projections
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info :smile.projections))
 
-;; ## smile.manifold
+;; ## Smile manifold
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info :smile.manifold))
 
@@ -510,7 +515,7 @@
 (mapv #(clerk/vl (utils/surface-plot iris-std [:sepal_length :sepal_width] (make-iris-pipeline %) (:model-type %)))
      [
       {:model-type :smile.classification/ada-boost}
-      ;; {:model-type :smile.classification/decision-tree}
+      {:model-type :smile.classification/decision-tree}
       {:model-type :smile.classification/gradient-tree-boost}
       {:model-type :smile.classification/knn}
       {:model-type :smile.classification/logistic-regression}

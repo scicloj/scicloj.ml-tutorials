@@ -6,6 +6,7 @@
 
 
 
+
 (comment
   (note/init-with-browser)
   (note/eval-this-notespace)
@@ -100,7 +101,6 @@
 
 
 (defn fastmath->cluster-data [model-data]
-  (def model-data model-data)
   (let [
         cluster-values
         (concat
