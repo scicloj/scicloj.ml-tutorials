@@ -1,17 +1,17 @@
-^{:nextjournal.clerk/visibility #{:hide-ns :hide}}
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (ns scicloj.ml.models
   (:require
    [tablecloth.api :as tc]
    [scicloj.ml.core]
    [scicloj.sklearn-clj.ml]
    [clojure.string :as str]
-   [scicloj.ml.ug-utils :refer :all]
+   [scicloj.ml.ug-utils :as utils]
    [scicloj.ml.ug-utils-clerk :as utils-clerk]
    [clojure.java.io :as io]
    [nextjournal.clerk :as clerk]))
 
 
-^{:nextjournal.clerk/viewer :hide-result}
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (comment
   (clerk/show! "src/scicloj/ml/models.clj")
   (clerk/halt!)
@@ -21,9 +21,7 @@
   (clerk/serve! {:browse? true})
   (clerk/serve! {:browse? true :watch-paths ["src/scicloj/ml/"]}))
 
-
-
-^{:nextjournal.clerk/viewer :hide-result}
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (require '[scicloj.ml.core :as ml]
          '[scicloj.ml.metamorph :as mm]
          '[scicloj.ml.dataset :refer [dataset add-column]]
@@ -32,13 +30,11 @@
          '[tech.v3.datatype.functional :as dtf]
          '[scicloj.metamorph.ml.toydata :as datasets])
 
-
-(clerk/set-viewers! [{:pred tc/dataset?
-                      :transform-fn #(clerk/table {:head (ds/column-names %)
-                                                   :rows (ds/rows % :as-seq)})}])
-
-
-^{:nextjournal.clerk/viewer :hide-result}
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
+(clerk/add-viewers! [{:pred tc/dataset?
+                      :transform-fn (clerk/update-val #(clerk/table {:head (ds/column-names %)
+                                                                     :rows (ds/rows % :as-seq)}))}])
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (def build-in-models
   (->>
    (ml/model-definition-names)
@@ -51,6 +47,7 @@
                        (namespace %)))
    sort))
 
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (defn make-iris-pipeline [model-options]
   (ml/pipeline
    (mm/set-inference-target :species)
@@ -77,7 +74,7 @@
 ;; The documentation below points as well to the javadoc and user-guide chapter (for Smile models)
 
 ;; The full list of build in models is:
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html
  [:ul
 
@@ -87,9 +84,6 @@
 
 
 ;; ## Smile classification models
-
-(clerk/html
- (utils-clerk/render-key-info ":smile.classification/ada-boost"))
 
 
 ;; In this example we will use the capability of the Ada boost classifier
@@ -102,12 +96,7 @@
    (datasets/breast-cancer-ds)))
 
 
-
-
-
 ;; To get an overview of the dataset, we print its summary:
-
-
 
 (-> df ds/info)
 
@@ -168,11 +157,11 @@
 
 (def iris  ^:nextjournal.clerk/no-cache  (datasets/iris-ds))
 
-iris
+
 
 ;; We make a pipe only containing the model, as the dataset is ready to
 ;; be used by `scicloj.ml`
-(def trained-pipe
+(def trained-pipe-tree
   (ml/fit-pipe
    iris
    (ml/pipeline
@@ -183,7 +172,7 @@ iris
 ;; We extract the Java object of the trained model.
 
 (def tree-model
-  (-> trained-pipe :model ml/thaw-model))
+  (-> trained-pipe-tree :model ml/thaw-model))
 
 
 ;; The model has a .dot function, which returns a GraphViz textual
@@ -191,13 +180,15 @@ iris
 ;; [kroki](https://kroki.io/) service.
 
 (clerk/html
- (String. (:body (kroki (.dot tree-model) :graphviz :svg)) "UTF-8"))
+ (String. (:body (utils/kroki (.dot tree-model) :graphviz :svg)) "UTF-8"))
 
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/discrete-naive-bayes"))
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/gradient-tree-boost"))
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/knn"))
 ;; In this example we use a knn model to classify some dummy data.
 ;; The training data is this:
@@ -243,13 +234,16 @@ iris
  (ds/column-values->categorical :y)
  seq)
 
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/logistic-regression"))
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/maxent-binomial"))
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/maxent-multinomial"))
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/random-forest"))
 ;; The following code plots the decision surfaces of the random forest
  ;; model on pairs of features.
@@ -284,33 +278,39 @@ iris
   (make-iris-pipeline
                       {:model-type :smile.classification/random-forest}))
 
-(clerk/vl (surface-plot iris [:sepal_length :sepal_width] rf-pipe :smile.classification/random-forest))
+(clerk/vl (utils/surface-plot iris [:sepal_length :sepal_width] rf-pipe :smile.classification/random-forest))
 
 (clerk/vl
- (surface-plot iris-std [:sepal_length :petal_length] rf-pipe :smile.classification/random-forest))
+ (utils/surface-plot iris-std [:sepal_length :petal_length] rf-pipe :smile.classification/random-forest))
 
 (clerk/vl
- (surface-plot iris-std [:sepal_length :petal_width] rf-pipe :smile.classification/random-forest))
+ (utils/surface-plot iris-std [:sepal_length :petal_width] rf-pipe :smile.classification/random-forest))
 (clerk/vl
- (surface-plot iris-std [:sepal_width :petal_length] rf-pipe :smile.classification/random-forest))
+ (utils/surface-plot iris-std [:sepal_width :petal_length] rf-pipe :smile.classification/random-forest))
 (clerk/vl
- (surface-plot iris-std [:sepal_width :petal_width] rf-pipe :smile.classification/random-forest))
+ (utils/surface-plot iris-std [:sepal_width :petal_width] rf-pipe :smile.classification/random-forest))
 (clerk/vl
- (surface-plot iris-std [:petal_length :petal_width] rf-pipe :smile.classification/random-forest))
+ (utils/surface-plot iris-std [:petal_length :petal_width] rf-pipe :smile.classification/random-forest))
 
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/sparse-logistic-regression"))
+
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/sparse-svm"))
+
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/svm"))
 
 ;; ## Smile regression
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.regression/elastic-net"))
 
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.regression/gradient-tree-boost"))
 
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.regression/lasso"))
 
 ;; We use the diabetes dataset and will show how Lasso regression
@@ -373,6 +373,7 @@ iris
  ;; to zero. This plot can be used as well to find important variables,
 ;; namely the ones which stay > 0 even with large lambda.
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html
  (utils-clerk/render-key-info ":smile.regression/ordinary-least-square"))
 
@@ -477,26 +478,27 @@ iris
                       :color {:field :type}}}]})
 
 
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.regression/random-forest"))
 
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.regression/ridge"))
 
 
 ;; ## Xgboost
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":xgboost"))
 
 ;; ## fastmath.cluster
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info :fastmath.cluster))
 
 ;; ## smile.projections
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info :smile.projections))
 
 ;; ## smile.manifold
-
+^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info :smile.manifold))
 
 
@@ -504,11 +506,11 @@ iris
 
 ;; In the following we see the decision surfaces of some models on the
 ;; same data from the Iris dataset using 2 columns :sepal_width and sepal_length:
-
-(map #(clerk/vl (surface-plot iris-std [:sepal_length :sepal_width] (make-iris-pipeline %)) (:model-type %))
+^{:nextjournal.clerk/visibility {:code :hide}}
+(mapv #(clerk/vl (utils/surface-plot iris-std [:sepal_length :sepal_width] (make-iris-pipeline %) (:model-type %)))
      [
       {:model-type :smile.classification/ada-boost}
-      {:model-type :smile.classification/decision-tree}
+      ;; {:model-type :smile.classification/decision-tree}
       {:model-type :smile.classification/gradient-tree-boost}
       {:model-type :smile.classification/knn}
       {:model-type :smile.classification/logistic-regression}
@@ -539,7 +541,15 @@ iris
 ;;
 
 
-(defn make-iris-pipeline [model-type]
+(defn make-iris-pipeline-ensemble [model-type]
+  (ml/pipeline
+   (mm/select-columns [:species :sepal_length :sepal_width])
+   (mm/set-inference-target :species)
+   (mm/categorical->number [:species])
+   {:metamorph/id :model}
+   (mm/model
+    {:model-type model-type})))
+(defn make-iris-pipeline-ensemble [model-type]
   (ml/pipeline
    (mm/select-columns [:species :sepal_length :sepal_width])
    (mm/set-inference-target :species)
@@ -548,21 +558,21 @@ iris
    (mm/model
     {:model-type model-type})))
 
-^{:nextjournal.clerk/visibility #{:show}}
+
 (def tree-pipeline
-  (make-iris-pipeline :smile.classification/decision-tree))
+  (make-iris-pipeline-ensemble :smile.classification/decision-tree))
  
-^{:nextjournal.clerk/visibility #{:show}}
+
 (def knn-pipeline
-  (make-iris-pipeline :smile.classification/knn))
+  (make-iris-pipeline-ensemble :smile.classification/knn))
   
-^{:nextjournal.clerk/visibility #{:show}}
+
 (def logistic-regression-pipeline
-  (make-iris-pipeline :smile.classification/logistic-regression))
+  (make-iris-pipeline-ensemble :smile.classification/logistic-regression))
   
 
 ;;  Know we can contruct an ensembe, using function `ensemble-pipe`
-^{:nextjournal.clerk/visibility #{:show}}
+
 (def ensemble (ml/ensemble-pipe [tree-pipeline
                                  knn-pipeline
                                  logistic-regression-pipeline]))
@@ -570,18 +580,18 @@ iris
 ;;  This ensemble is as any other metamorph pipeline,
 ;;  so we can train and predict as usual:
 
-^{:nextjournal.clerk/visibility #{:show}}
+
 (def fitted-ctx-ensemble
   (ml/fit-pipe iris-std ensemble))
 
-^{:nextjournal.clerk/visibility #{:show}}
+
 (def transformed-ctx-ensemble
   (ml/transform-pipe iris-std ensemble fitted-ctx-ensemble))
 
 
 ;;  Frequency of predictions
 
-^{:nextjournal.clerk/visibility #{:show}}
+
 (->
  transformed-ctx-ensemble
  :metamorph/data
@@ -591,7 +601,7 @@ iris
 
 ;;  The surface plot of the ensemble
 
-^{:nextjournal.clerk/visibility #{:show}}
-(clerk/vl (surface-plot iris-std
+
+(clerk/vl (utils/surface-plot iris-std
                         [:sepal_length :sepal_width]
                         ensemble "voting ensemble"))
