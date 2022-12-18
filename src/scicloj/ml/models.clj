@@ -2,15 +2,10 @@
   :nextjournal.clerk/toc true}
 (ns scicloj.ml.models
   (:require
-   [tablecloth.api :as tc]
-   [scicloj.ml.core]
-   [scicloj.sklearn-clj.ml]
-   [clojure.string :as str]
+   [nextjournal.clerk :as clerk]
    [scicloj.ml.ug-utils :as utils]
    [scicloj.ml.ug-utils-clerk :as utils-clerk]
-   [clojure.java.io :as io]
-   [nextjournal.clerk :as clerk]))
-
+   [tablecloth.api :as tc]))
 
 ^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (comment
@@ -25,9 +20,6 @@
 ^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (require '[scicloj.ml.core :as ml]
          '[scicloj.ml.metamorph :as mm]
-         '[scicloj.ml.dataset :refer [dataset add-column]]
-         '[scicloj.ml.dataset :as ds]
-         '[tech.v3.dataset.math :as std-math]
          '[tech.v3.datatype.functional :as dtf]
          '[scicloj.metamorph.ml.toydata :as datasets])
 
@@ -302,9 +294,7 @@
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (clerk/html (utils-clerk/render-key-info ":smile.classification/sparse-svm"))
 
-;; ### svmsvm
 ^{:nextjournal.clerk/visibility {:code :hide}}
-(clerk/md "### svm")
 (clerk/html (utils-clerk/render-key-info ":smile.classification/svm"))
 
 ;; ## Smile regression models

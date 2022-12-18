@@ -82,7 +82,7 @@ at keys `:scicloj.metamorph.ml/feature-ds` and  `:scicloj.metamorph.ml/target-ds
 (def pipe-fn
   (ml/pipeline
    (mm/select-columns [:time])))
-y   ;; (mm/step-2)
+   ;; (mm/step-2)
    ;; (mm/step-3)
    ;; (mm/step-4)
 
