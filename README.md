@@ -3,6 +3,8 @@
 >The usage of teh shim `scicloj.ml` is now considered deprecated. The underlying libraries should be used directly or via
 >[noj](https://github.com/scicloj/noj) is a new libray to combine several of these librraies, without remapping the namespaces.
 >It contains as well updated versions of several of the tutorials here.
+>The code inside the tutorials is still valid and mostyly working, but the functions are in different namespaces when
+>ussed withouth `scicloj.ml`
 >***
 
 
