@@ -1,3 +1,11 @@
+>[!NOTE]
+>***
+>The usage of teh shim `scicloj.ml` is now considered deprecated. The underlying libraries should be used directly or via
+>[noj](https://github.com/scicloj/noj) is a new libray to combine several of these librraies, without remapping the namespaces.
+>It contains as well updated versions of several of the tutorials here.
+>***
+
+
 # Tutorials for [scicloj.ml](https://github.com/scicloj/scicloj.ml)
 
 The Clojure machine learning library scicloj.ml is documented here: 
